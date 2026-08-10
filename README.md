@@ -14,6 +14,7 @@
 <p align="center">
   <a href="#quick-start"><strong>Quick start</strong></a> ·
   <a href="#what-fylune-does">Features</a> ·
+  <a href="#agent-ready-by-design">Agents</a> ·
   <a href="#architecture">Architecture</a> ·
   <a href="CONTRIBUTING.md">Contributing</a> ·
   <a href="SECURITY.md">Security</a>
@@ -41,7 +42,23 @@ Most document apps ask you to import, upload, or surrender ownership of your fil
 - **Opens office files** — preview and edit spreadsheets, plus preview Word and PowerPoint documents.
 - **Treats media as first-class files** — image, video, audio, and PDF previews live in the same tab model.
 - **Reviews external changes safely** — every write is checked against the content the editor last read, so mismatches become reviewable conflicts.
+- **Works with AI agents** — a local Agent protocol lets tools preview and safely apply changes to the same files you see in Fylune.
 - **Runs offline** — account registration is optional and never gates local editing.
+
+## Agent-ready by design
+
+Fylune provides a local JSON-RPC protocol for AI agents. Bring your own agent or automation and let it work in the same real workspace without uploading documents to Fylune:
+
+- Discover open workspaces and read documents through an authenticated local connection.
+- Stream text or structured patches into a live preview before committing them.
+- Apply changes atomically with expected-content checks, snapshots, and three-way merging.
+- Preserve overlapping edits as reviewable conflicts instead of silently overwriting user work.
+
+The connection uses a per-launch capability token and a local Unix socket or Windows named pipe. No account, hosted model, or internet connection is required. With Fylune running, contributors can inspect the protocol using the included CLI:
+
+```bash
+pnpm --filter @fylune/desktop agent:rpc workspace.list
+```
 
 ## Quick start
 
