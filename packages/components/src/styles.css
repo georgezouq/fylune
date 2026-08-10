@@ -1,0 +1,540 @@
+@import "katex/dist/katex.min.css";
+
+.fylune-editor,
+.fylune-document {
+  color-scheme: inherit;
+  --fylune-editor-bg: light-dark(
+    oklch(0.982 0.006 165),
+    oklch(0.17 0.014 210)
+  );
+  --fylune-editor-surface: light-dark(
+    oklch(0.995 0.003 165),
+    oklch(0.205 0.016 210)
+  );
+  --fylune-editor-surface-raised: light-dark(
+    oklch(0.965 0.014 165),
+    oklch(0.245 0.02 205)
+  );
+  --fylune-editor-ink: light-dark(
+    oklch(0.22 0.02 210),
+    oklch(0.93 0.009 170)
+  );
+  --fylune-editor-muted: light-dark(
+    oklch(0.49 0.025 210),
+    oklch(0.72 0.018 200)
+  );
+  --fylune-editor-border: light-dark(
+    oklch(0.875 0.015 195),
+    oklch(0.33 0.02 210)
+  );
+  --fylune-editor-border-soft: light-dark(
+    oklch(0.925 0.012 185),
+    oklch(0.275 0.017 210)
+  );
+  --fylune-editor-accent: light-dark(
+    oklch(0.54 0.13 158),
+    oklch(0.73 0.125 158)
+  );
+  --fylune-editor-accent-soft: light-dark(
+    oklch(0.925 0.045 158),
+    oklch(0.285 0.055 158)
+  );
+  --fylune-editor-error: light-dark(
+    oklch(0.5 0.16 25),
+    oklch(0.74 0.12 25)
+  );
+  --fylune-editor-code: light-dark(
+    oklch(0.945 0.012 190),
+    oklch(0.15 0.014 210)
+  );
+  container-type: inline-size;
+  position: relative;
+  overflow: hidden;
+  min-height: var(--fylune-editor-min-height, 32rem);
+  border: 1px solid var(--fylune-editor-border);
+  border-radius: 1rem;
+  background: var(--fylune-editor-bg);
+  color: var(--fylune-editor-ink);
+  font-family:
+    "Avenir Next", Avenir, ui-rounded, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 1rem;
+  font-kerning: normal;
+  line-height: 1.5;
+}
+
+.fylune-editor[data-fylune-theme="light"],
+.fylune-document[data-fylune-theme="light"] {
+  color-scheme: light;
+}
+
+.fylune-editor[data-fylune-theme="dark"],
+.fylune-document[data-fylune-theme="dark"] {
+  color-scheme: dark;
+}
+
+.fylune-editor *,
+.fylune-editor *::before,
+.fylune-editor *::after,
+.fylune-document *,
+.fylune-document *::before,
+.fylune-document *::after {
+  box-sizing: border-box;
+}
+
+.fylune-document {
+  color-scheme: inherit;
+  width: 100%;
+  min-height: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  color: var(--fylune-editor-ink);
+  background: transparent;
+  font-family:
+    "Avenir Next", Avenir, ui-rounded, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 1rem;
+  font-kerning: normal;
+  line-height: 1.65;
+}
+
+.fylune-document__content {
+  color: var(--fylune-editor-ink);
+}
+
+.fylune-document__content > :first-child {
+  margin-top: 0;
+}
+
+.fylune-document__content > :last-child {
+  margin-bottom: 0;
+}
+
+.fylune-document__content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-block: 1.6rem;
+  border-radius: 0.65rem;
+}
+
+.fylune-editor button,
+.fylune-editor textarea {
+  color: inherit;
+  font: inherit;
+}
+
+.fylune-editor button:focus-visible,
+.fylune-editor textarea:focus-visible,
+.fylune-editor a:focus-visible {
+  outline: 3px solid var(--fylune-editor-accent);
+  outline-offset: 2px;
+}
+
+.fylune-editor__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--fylune-editor-border);
+  background: var(--fylune-editor-surface);
+}
+
+.fylune-editor__tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.fylune-editor__tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--fylune-editor-muted);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 570;
+  line-height: 1;
+  transition:
+    color 140ms cubic-bezier(0.25, 1, 0.5, 1),
+    background-color 140ms cubic-bezier(0.25, 1, 0.5, 1),
+    transform 100ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.fylune-editor__tabs button[aria-selected="true"] {
+  background: var(--fylune-editor-accent-soft);
+  color: var(--fylune-editor-ink);
+  font-weight: 680;
+}
+
+.fylune-editor__tabs button:active {
+  transform: translateY(1px);
+}
+
+.fylune-editor__tabs svg {
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--fylune-editor-accent);
+}
+
+.fylune-editor__safety {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--fylune-editor-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.fylune-editor__safety > span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--fylune-editor-accent);
+  box-shadow: 0 0 0 0.2rem var(--fylune-editor-accent-soft);
+}
+
+.fylune-editor__workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  min-height: calc(var(--fylune-editor-min-height, 32rem) - 3.75rem);
+}
+
+.fylune-editor__source-panel,
+.fylune-editor__preview-panel {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: auto 1fr auto;
+}
+
+.fylune-editor__source-panel {
+  border-right: 1px solid var(--fylune-editor-border);
+  background: var(--fylune-editor-code);
+}
+
+.fylune-editor__preview-panel {
+  grid-template-rows: auto 1fr;
+  background: var(--fylune-editor-surface);
+}
+
+.fylune-editor__panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--fylune-editor-border-soft);
+  color: var(--fylune-editor-muted);
+  font-size: 0.75rem;
+  font-weight: 680;
+  letter-spacing: 0.055em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.fylune-editor__updating {
+  color: var(--fylune-editor-accent);
+}
+
+.fylune-editor__source-panel textarea {
+  display: block;
+  width: 100%;
+  min-height: 20rem;
+  direction: ltr;
+  resize: none;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  padding: clamp(1rem, 3cqi, 1.5rem);
+  background: transparent;
+  caret-color: var(--fylune-editor-accent);
+  color: var(--fylune-editor-ink);
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
+  font-size: 0.875rem;
+  font-variant-ligatures: none;
+  line-height: 1.75;
+  text-align: left;
+  tab-size: 2;
+}
+
+.fylune-editor__source-panel textarea::placeholder {
+  color: var(--fylune-editor-muted);
+  opacity: 1;
+}
+
+.fylune-editor__source-panel textarea:read-only {
+  cursor: default;
+}
+
+.fylune-editor__source-help {
+  max-width: 62ch;
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--fylune-editor-border-soft);
+  color: var(--fylune-editor-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.fylune-editor__document {
+  overflow: auto;
+  padding: clamp(1.25rem, 4cqi, 2.75rem);
+  color: var(--fylune-editor-ink);
+  scrollbar-color: var(--fylune-editor-border) transparent;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) > :first-child {
+  margin-top: 0;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) > :last-child {
+  margin-bottom: 0;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) h1,
+:is(.fylune-editor__document, .fylune-document__content) h2,
+:is(.fylune-editor__document, .fylune-document__content) h3 {
+  max-width: 24ch;
+  margin: 1.6em 0 0.6em;
+  color: var(--fylune-editor-ink);
+  font-family: Iowan Old Style, Baskerville, "Times New Roman", serif;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) h1 {
+  font-size: clamp(1.75rem, 5cqi, 2.5rem);
+}
+
+:is(.fylune-editor__document, .fylune-document__content) h2 {
+  font-size: clamp(1.5rem, 4cqi, 2rem);
+}
+
+:is(.fylune-editor__document, .fylune-document__content) h3 {
+  font-size: 1.25rem;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) p,
+:is(.fylune-editor__document, .fylune-document__content) li {
+  max-width: 64ch;
+  color: var(--fylune-editor-muted);
+}
+
+:is(.fylune-editor__document, .fylune-document__content) a {
+  color: var(--fylune-editor-accent);
+  text-underline-offset: 0.18em;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) code:not(.katex *) {
+  padding: 0.12em 0.3em;
+  border-radius: 0.3rem;
+  background: var(--fylune-editor-code);
+  color: var(--fylune-editor-ink);
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", ui-monospace, monospace;
+  font-size: 0.88em;
+  font-variant-ligatures: none;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) pre {
+  overflow: auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: var(--fylune-editor-code);
+}
+
+:is(.fylune-editor__document, .fylune-document__content) pre:has(.fylune-editor__diagram),
+:is(.fylune-editor__document, .fylune-document__content) pre:has(.fylune-editor__diagram-status),
+:is(.fylune-editor__document, .fylune-document__content) pre:has(.fylune-editor__error) {
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+  white-space: normal;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) pre > code {
+  padding: 0;
+  background: transparent;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) blockquote {
+  margin-inline: 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 0.2rem solid var(--fylune-editor-accent);
+}
+
+:is(.fylune-editor__document, .fylune-document__content) table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) th,
+:is(.fylune-editor__document, .fylune-document__content) td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--fylune-editor-border);
+  text-align: start;
+}
+
+.fylune-editor__diagram {
+  display: grid;
+  min-height: 18rem;
+  place-items: center;
+  padding: clamp(0.5rem, 2cqi, 1.25rem) 0;
+}
+
+.fylune-editor__diagram svg {
+  display: block;
+  width: 100%;
+  max-width: 42rem;
+  height: auto;
+  max-height: 28rem;
+}
+
+.fylune-editor__diagram-status {
+  display: flex;
+  min-height: 18rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: var(--fylune-editor-muted);
+  font-size: 0.875rem;
+}
+
+.fylune-editor__diagram-status > span {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 2px solid var(--fylune-editor-border);
+  border-top-color: var(--fylune-editor-accent);
+  border-radius: 50%;
+  animation: fylune-editor-spin 720ms linear infinite;
+}
+
+.fylune-editor__error {
+  display: grid;
+  gap: 0.35rem;
+  margin-block: 1rem;
+  padding: 1rem 0;
+  border-block: 1px solid var(--fylune-editor-error);
+  color: var(--fylune-editor-error);
+}
+
+.fylune-editor__error span {
+  font-size: 0.8125rem;
+}
+
+.fylune-editor__blocked-image {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding-inline: 0.75rem;
+  border: 1px dashed var(--fylune-editor-border);
+  border-radius: 0.5rem;
+  color: var(--fylune-editor-muted);
+  font-size: 0.8125rem;
+}
+
+:is(.fylune-editor__document, .fylune-document__content) .katex-display {
+  overflow: auto hidden;
+  margin: 1.75rem 0;
+  padding: 1rem 0;
+  color: var(--fylune-editor-ink);
+}
+
+:is(.fylune-editor__document, .fylune-document__content) .katex {
+  font-size: 1.08em;
+}
+
+@keyframes fylune-editor-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@container (max-width: 45rem) {
+  .fylune-editor__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    padding-block: 0.65rem;
+  }
+
+  .fylune-editor__tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .fylune-editor__tabs button {
+    padding-inline: 0.4rem;
+  }
+
+  .fylune-editor__safety {
+    padding-inline: 0.4rem;
+  }
+
+  .fylune-editor__workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fylune-editor__source-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--fylune-editor-border);
+  }
+
+  .fylune-editor__source-panel textarea {
+    min-height: 15rem;
+  }
+
+  .fylune-editor__document {
+    min-height: 20rem;
+  }
+}
+
+@container (max-width: 28rem) {
+  .fylune-editor__tabs button {
+    min-width: 0;
+  }
+
+  .fylune-editor__tabs button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fylune-editor__tabs button:hover {
+    background: var(--fylune-editor-surface-raised);
+    color: var(--fylune-editor-ink);
+  }
+
+  .fylune-editor__tabs button[aria-selected="true"]:hover {
+    background: var(--fylune-editor-accent-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fylune-editor *,
+  .fylune-editor *::before,
+  .fylune-editor *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

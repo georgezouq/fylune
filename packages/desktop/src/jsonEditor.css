@@ -1,0 +1,43 @@
+.json-code-editor {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.json-code-editor .cm-editor,
+.json-code-editor .cm-scroller {
+  height: 100%;
+  min-height: 0;
+}
+
+.json-code-editor .cm-editor.cm-focused {
+  outline: 0;
+}
+
+.json-code-editor .cm-scroller {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.json-code-editor .cm-content {
+  min-width: max-content;
+  padding-bottom: 56px;
+}
+
+.json-code-editor .cm-foldGutter .cm-gutterElement {
+  cursor: pointer;
+}
+
+.json-code-editor .cm-lint-marker-error {
+  content: "";
+  border-bottom-color: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .json-code-editor *,
+  .json-code-editor *::before,
+  .json-code-editor *::after {
+    scroll-behavior: auto !important;
+  }
+}
