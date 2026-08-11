@@ -27,7 +27,8 @@
     <a href="docs/media/fylune-product-tour.mp4">Watch the Fylune product tour</a>
   </video>
   <br>
-  <a href="docs/media/fylune-product-tour.mp4">Watch the product tour</a>
+  <a href="https://youtu.be/Nx4XbTozFWw"><strong>Watch the product tour on YouTube ↗</strong></a> ·
+  <a href="docs/media/fylune-product-tour.mp4">Download MP4</a>
 </div>
 
 ## Why Fylune
