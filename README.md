@@ -19,7 +19,7 @@
   <a href="SECURITY.md">Security</a>
 </p>
 
-![Fylune desktop workspace](docs/media/fylune-desktop.png)
+![Fylune butterfly workspace demo](docs/media/fylune-butterflies-demo.gif)
 
 <div align="center">
   <video src="docs/media/fylune-product-tour.mp4" controls poster="docs/media/fylune-product-tour-poster.png" width="960">
