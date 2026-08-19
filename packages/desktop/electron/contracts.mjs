@@ -73,3 +73,14 @@ export const signInSchema = z.object({
 export const registerSchema = signInSchema.extend({
   password: z.string().min(12).max(128),
 }).strict();
+const agentMessageSchema = z.object({
+  role: z.enum(["system", "user", "assistant", "tool"]),
+  content: z.string().max(100_000),
+}).strict();
+export const agentCompletionSchema = z.object({
+  messages: z.array(agentMessageSchema).min(1).max(100),
+  stream: z.boolean().optional().default(false),
+  temperature: z.number().finite().min(0).max(2).optional(),
+  max_tokens: z.number().int().min(1).max(32_000).optional(),
+  tools: z.array(z.record(z.string(), z.unknown())).max(32).optional(),
+}).strict();

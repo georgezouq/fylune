@@ -142,6 +142,25 @@ export class BackendClient {
     }
   }
 
+  async getAgentStatus() {
+    await this.initialize();
+    return this.#request("/ai/agent/status");
+  }
+
+  async getAgentSkills() {
+    await this.initialize();
+    return this.#request("/ai/agent/skills");
+  }
+
+  async completeAgent(input) {
+    await this.initialize();
+    return this.#request("/ai/agent/v1/chat/completions", {
+      method: "POST",
+      timeoutMs: 300_000,
+      body: JSON.stringify({ ...input, stream: false }),
+    });
+  }
+
   async signOut() {
     if (this.refreshToken) {
       await this.#request(

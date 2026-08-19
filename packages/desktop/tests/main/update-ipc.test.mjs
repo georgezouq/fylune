@@ -130,7 +130,15 @@ describe("desktop update IPC", () => {
     await expect(exposedApi.snapshots.preview({ snapshotId: "snapshot-id" })).resolves.toMatchObject({
       channel: "fylune:snapshots:preview",
     });
-    expect(exposedApi.agent).toBeUndefined();
+    await expect(exposedApi.agent.status()).resolves.toMatchObject({
+      channel: "fylune:agent:status",
+    });
+    await expect(exposedApi.agent.skills()).resolves.toMatchObject({
+      channel: "fylune:agent:skills",
+    });
+    await expect(exposedApi.agent.complete({ messages: [{ role: "user", content: "hello" }] })).resolves.toMatchObject({
+      channel: "fylune:agent:complete",
+    });
     const callback = vi.fn();
     const unsubscribe = exposedApi.updates.onStateChange(callback);
     listeners.get("fylune:updates:state-changed")({}, { status: "downloaded" });

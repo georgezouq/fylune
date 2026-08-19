@@ -326,6 +326,15 @@ const demoBridge = {
     demoSession = { user: null };
     return demoSession;
   },
+  async getAgentStatus() {
+    return { configured: false, provider: null, model: null, baseUrl: null, protocol: "openai-chat-completions" };
+  },
+  async getAgentSkills() {
+    return [];
+  },
+  async completeAgent() {
+    throw Object.assign(new Error("Configure the optional self-hosted Agent API first."), { code: "AI_NOT_CONFIGURED" });
+  },
   onExternalChange() {
     return () => {};
   },
@@ -372,6 +381,9 @@ function nativeBridge(source) {
   const listSnapshots = pick(source, ["snapshots.list"]);
   const previewSnapshot = pick(source, ["snapshots.preview"]);
   const restoreSnapshot = pick(source, ["snapshots.restore"]);
+  const getAgentStatus = pick(source, ["agent.status"]);
+  const getAgentSkills = pick(source, ["agent.skills"]);
+  const completeAgent = pick(source, ["agent.complete"]);
   let activeProject = null;
   let activeDocumentPath = demoDocuments[0].path.replaceAll(" / ", "/");
   let cachedDocuments = null;
@@ -553,6 +565,9 @@ function nativeBridge(source) {
     signIn: pick(source, ["account.signIn"]) || demoBridge.signIn,
     register: pick(source, ["account.register"]) || demoBridge.register,
     signOut: pick(source, ["account.signOut"]) || demoBridge.signOut,
+    getAgentStatus: getAgentStatus || demoBridge.getAgentStatus,
+    getAgentSkills: getAgentSkills || demoBridge.getAgentSkills,
+    completeAgent: completeAgent || demoBridge.completeAgent,
     getUpdateState: pick(source, ["updates.getState"]) || demoBridge.getUpdateState,
     checkForUpdates: pick(source, ["updates.check"]) || demoBridge.checkForUpdates,
     downloadUpdate: pick(source, ["updates.download"]) || demoBridge.downloadUpdate,

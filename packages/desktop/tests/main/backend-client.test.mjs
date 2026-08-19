@@ -88,4 +88,28 @@ describe("backend account client", () => {
       ["/auth/me", "Bearer fresh-access"],
     ]);
   });
+
+  it("exposes the optional self-hosted Agent API without sending a model key to the renderer", async () => {
+    const fetchImpl = vi.fn(async (url, options) => {
+      expect(options.headers.Authorization).toBe("Bearer access-token");
+      if (url.pathname === "/ai/agent/status") {
+        return new Response(JSON.stringify({ configured: true, provider: "openrouter" }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ id: "chatcmpl-local", choices: [] }), { status: 200 });
+    });
+    const backend = new BackendClient({
+      baseUrl: "https://api.fylune.test",
+      fetchImpl,
+      tokenVault: { load: async () => session, save: async () => {} },
+    });
+
+    await expect(backend.getAgentStatus()).resolves.toMatchObject({ configured: true });
+    await expect(backend.completeAgent({
+      messages: [{ role: "user", content: "Summarize this" }],
+    })).resolves.toMatchObject({ id: "chatcmpl-local" });
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toMatchObject({
+      stream: false,
+      messages: [{ role: "user", content: "Summarize this" }],
+    });
+  });
 });

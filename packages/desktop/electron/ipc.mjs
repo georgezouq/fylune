@@ -4,6 +4,7 @@ import { stat } from "node:fs/promises";
 import { CHANNELS } from "./channels.mjs";
 import {
   acceptExternalDocumentSchema,
+  agentCompletionSchema,
   assetRequestSchema,
   clipboardWriteTextSchema,
   documentRequestSchema,
@@ -304,6 +305,9 @@ export function registerIpcHandlers({
   registerHandler(CHANNELS.accountRegister, registerSchema, async (input) => backend.register(input));
   registerHandler(CHANNELS.accountSignOut, emptySchema, async () => backend.signOut());
   registerHandler(CHANNELS.accountGetDetails, emptySchema, async () => backend.getAccount());
+  registerHandler(CHANNELS.agentStatus, emptySchema, async () => backend.getAgentStatus());
+  registerHandler(CHANNELS.agentSkills, emptySchema, async () => backend.getAgentSkills());
+  registerHandler(CHANNELS.agentComplete, agentCompletionSchema, async (input) => backend.completeAgent(input));
   registerHandler(CHANNELS.updateGetState, emptySchema, async () => updateService.getState());
   registerHandler(CHANNELS.updateCheck, emptySchema, async () => updateService.checkForUpdates());
   registerHandler(CHANNELS.updateDownload, emptySchema, async () => updateService.downloadUpdate());

@@ -44,6 +44,7 @@ Most document apps ask you to import, upload, or surrender ownership of your fil
 - **Treats media as first-class files** — image, video, audio, and PDF previews live in the same tab model.
 - **Reviews external changes safely** — every write is checked against the content the editor last read, so mismatches become reviewable conflicts.
 - **Works with AI agents** — a local Agent protocol lets tools preview and safely apply changes to the same files you see in Fylune.
+- **Optional self-hosted AI** — point the account API at OpenRouter (or another OpenAI-compatible endpoint) with your own server-side key.
 - **Runs offline** — account registration is optional and never gates local editing.
 
 ## Agent-ready by design
@@ -60,6 +61,18 @@ The connection uses a per-launch capability token and a local Unix socket or Win
 ```bash
 pnpm --filter @fylune/desktop agent:rpc workspace.list
 ```
+
+### Optional self-hosted Agent API
+
+The open-source backend exposes an authenticated OpenAI-compatible Agent endpoint without sending workspace files to Fylune:
+
+```bash
+OPENROUTER_API_KEY=replace-me
+OPENROUTER_TEXT_MODEL=openai/gpt-4o-mini
+pnpm dev
+```
+
+Use `GET /ai/agent/status` to verify configuration and `POST /ai/agent/v1/chat/completions` for model responses. Keep the provider key in the backend `.env`; it is never shipped to Electron. To edit a document, an external Agent can combine the response with the local JSON-RPC protocol, preview the patch, and apply it with an expected-content check.
 
 ## Quick start
 
@@ -111,7 +124,7 @@ The desktop process owns filesystem access and exposes a small validated IPC sur
 - Local editing never requires login or connectivity.
 - Files are written only after an expected-content check.
 - No telemetry is included in the open-source build.
-- The optional backend can be self-hosted and contains authentication only.
+- The optional backend can be self-hosted and contains authentication plus an opt-in Agent proxy; it does not store documents or workspace metadata.
 
 ## Build and verify
 
@@ -126,7 +139,7 @@ pnpm --filter @fylune/desktop pack
 
 ## Scope
 
-This repository is the community edition of Fylune. It intentionally excludes the hosted website, payments, subscriptions, usage credits, hosted AI, cloud storage, document sharing, and cloud sync. Those services are not required for the local editing loop.
+This repository is the community edition of Fylune. It intentionally excludes the hosted website, payments, subscriptions, usage credits, cloud storage, document sharing, and cloud sync. AI is opt-in and self-hosted: the provider key and model access belong to the operator of the backend, not Fylune. None of these services are required for the local editing loop.
 
 ## Contributing
 
