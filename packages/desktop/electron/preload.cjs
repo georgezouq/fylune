@@ -42,6 +42,9 @@ const CHANNELS = Object.freeze({
   accountRegister: "fylune:account:register",
   accountSignOut: "fylune:account:sign-out",
   accountGetDetails: "fylune:account:get-details",
+  agentStatus: "fylune:agent:status",
+  agentSkills: "fylune:agent:skills",
+  agentComplete: "fylune:agent:complete",
   updateGetState: "fylune:updates:get-state",
   updateCheck: "fylune:updates:check",
   updateDownload: "fylune:updates:download",
@@ -151,6 +154,11 @@ const api = Object.freeze({
     signIn: (input) => invoke(CHANNELS.accountSignIn, input),
     register: (input) => invoke(CHANNELS.accountRegister, input),
     signOut: () => invoke(CHANNELS.accountSignOut),
+  }),
+  agent: Object.freeze({
+    status: () => invoke(CHANNELS.agentStatus),
+    skills: () => invoke(CHANNELS.agentSkills),
+    complete: (input) => invoke(CHANNELS.agentComplete, input),
   }),
   updates: Object.freeze({
     getState: () => invoke(CHANNELS.updateGetState),
