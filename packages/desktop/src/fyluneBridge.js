@@ -149,6 +149,15 @@ const demoBridge = {
   async completeOnboarding() {
     return { completed: true };
   },
+  async getCliStatus() {
+    return { status: "unavailable", reason: "development", pathConfigured: false };
+  },
+  async installCli() {
+    return this.getCliStatus();
+  },
+  async uninstallCli() {
+    return this.getCliStatus();
+  },
   async openProject() {
     await delay();
     return demoProject;
@@ -351,6 +360,9 @@ function nativeBridge(source) {
   const getWindowState = pick(source, ["window.getState"]);
   const completeOnboarding = pick(source, ["window.completeOnboarding"]);
   const onWindowFullscreenChange = pick(source, ["window.onFullscreenChange"]);
+  const getCliStatus = pick(source, ["cli.getStatus"]);
+  const installCli = pick(source, ["cli.install"]);
+  const uninstallCli = pick(source, ["cli.uninstall"]);
   const pickProject = pick(source, ["projects.pick"]);
   const createProjectRequest = pick(source, ["projects.create"]);
   const listRecentProjects = pick(source, ["projects.listRecent"]);
@@ -402,6 +414,11 @@ function nativeBridge(source) {
     activeProject = scanned?.projectId || projectId;
     activeDocumentPath = demoDocuments[0].path.replaceAll(" / ", "/");
     documentHashes.clear();
+    const targetDocument = scanned?.targetDocument;
+    if (targetDocument?.path && targetDocument.hash) {
+      activeDocumentPath = targetDocument.path;
+      documentHashes.set(activeDocumentPath, targetDocument.hash);
+    }
     invalidateDocuments();
     return {
       ...picked,
@@ -420,6 +437,9 @@ function nativeBridge(source) {
     getWindowState: getWindowState || demoBridge.getWindowState,
     completeOnboarding: completeOnboarding || demoBridge.completeOnboarding,
     onWindowFullscreenChange: onWindowFullscreenChange || demoBridge.onWindowFullscreenChange,
+    getCliStatus: getCliStatus || demoBridge.getCliStatus,
+    installCli: installCli || demoBridge.installCli,
+    uninstallCli: uninstallCli || demoBridge.uninstallCli,
     openProject: () => pickProject ? requestProject(() => pickProject()) : demoBridge.openProject(),
     createProject: () => createProjectRequest ? requestProject(() => createProjectRequest()) : demoBridge.createProject(),
     async listRecentProjects() {

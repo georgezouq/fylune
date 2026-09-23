@@ -7,6 +7,9 @@ const CHANNELS = Object.freeze({
   windowGetState: "fylune:window:get-state",
   windowCompleteOnboarding: "fylune:window:complete-onboarding",
   windowFullscreenChanged: "fylune:window:fullscreen-changed",
+  cliGetStatus: "fylune:cli:get-status",
+  cliInstall: "fylune:cli:install",
+  cliUninstall: "fylune:cli:uninstall",
   projectPick: "fylune:projects:pick",
   projectCreate: "fylune:projects:create",
   projectListRecent: "fylune:projects:list-recent",
@@ -70,6 +73,11 @@ async function invoke(channel, input) {
 
 const api = Object.freeze({
   app: Object.freeze({ getInfo: () => invoke(CHANNELS.appInfo) }),
+  cli: Object.freeze({
+    getStatus: () => invoke(CHANNELS.cliGetStatus),
+    install: () => invoke(CHANNELS.cliInstall),
+    uninstall: () => invoke(CHANNELS.cliUninstall),
+  }),
   window: Object.freeze({
     getState: () => invoke(CHANNELS.windowGetState),
     completeOnboarding: () => invoke(CHANNELS.windowCompleteOnboarding),

@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "Automatische Updates sind in diesem Build nicht verfügbar.",
         "UPDATE_FAILED": "Fylune konnte das Update nicht abschließen. Lokale Dateien wurden nicht geändert."
       }
+    },
+    "cli": {
+      "title": "Befehlszeile",
+      "description": "Öffne Fylune, Arbeitsbereiche und Dokumente aus jedem Terminal. Agents nutzen denselben Befehl für sichere lokale Zusammenarbeit.",
+      "loading": "Wird aktualisiert…",
+      "install": "CLI installieren",
+      "repair": "CLI reparieren",
+      "uninstall": "CLI deinstallieren",
+      "installed": "Der Befehl fylune ist unter {path} installiert.",
+      "copyPath": "PATH-Befehl kopieren",
+      "copied": "Kopiert",
+      "unavailableAppStore": "Die App-Store-Version öffnet Dateien und Ordner über einen im Terminal installierten Starter. Agent- und doctor-Befehle benötigen die direkt heruntergeladene Version.",
+      "unavailable": "Das Befehlszeilenwerkzeug ist in diesem Build nicht verfügbar.",
+      "conflict": "Unter {path} existiert bereits eine andere Datei. Fylune überschreibt sie nicht.",
+      "failed": "Fylune konnte das Befehlszeilenwerkzeug nicht aktualisieren.",
+      "copyInstall": "Installationsbefehl kopieren",
+      "terminalSteps": "Füge den Befehl im Terminal ein und drücke die Eingabetaste. Nur der Starter wird in ~/.local/bin installiert – ohne Administratorpasswort, Downloads oder Änderungen am Shell-Profil.",
+      "showCommand": "Installationsbefehl anzeigen",
+      "tryCommand": "Im Terminal testen:",
+      "pathHelp": "Falls fylune nicht gefunden wird, führe diesen Befehl aus. Füge dieselbe Zeile für künftige Terminals in ~/.zshrc (zsh) oder ~/.bash_profile (bash) ein."
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "reload": "Vom Datenträger neu laden",
     "fidelityNote": "Beim Bearbeiten wird die Arbeitsmappe neu geschrieben. Zellwerte, Formate und Formeln bleiben erhalten; Diagramme und Pivot-Tabellen überstehen das Neuschreiben möglicherweise nicht."
   },
+  "json": {
+    "editing": "{title} bearbeiten",
+    "format": "Formatieren",
+    "jsonEditor": "JSON-Editor",
+    "jsonlEditor": "JSONL-Editor",
+    "validJson": "Gültiges JSON",
+    "validJsonl": "Gültiges JSONL"
+  },
   "slides": {
     "opening": "Präsentation wird geöffnet…",
     "slides": "Folien",
@@ -520,14 +548,6 @@
     "video": "Video",
     "audio": "Audio",
     "unsupportedElement": "Folienobjekt"
-  },
-  "json": {
-    "editing": "{title} bearbeiten",
-    "format": "Formatieren",
-    "jsonEditor": "JSON-Editor",
-    "jsonlEditor": "JSONL-Editor",
-    "validJson": "Gültiges JSON",
-    "validJsonl": "Gültiges JSONL"
   },
   "legacyOffice": {
     "title": "{format}-Dateien öffnen sich in ihrer ursprünglichen App",

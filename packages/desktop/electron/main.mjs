@@ -1,10 +1,10 @@
 import path from "node:path";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow, protocol, session, shell } from "electron";
+import { app, BrowserWindow, Menu, protocol, session, shell } from "electron";
 
 import { CHANNELS } from "./channels.mjs";
-import { openProjectPayload, registerIpcHandlers } from "./ipc.mjs";
+import { openExternalPathPayload, registerIpcHandlers } from "./ipc.mjs";
 import { AgentChangeServer } from "./lib/agent-change-server.mjs";
 import { prepareFyluneDataDirectory, resolveFyluneDataPath } from "./lib/app-data.mjs";
 import { ASSET_PROTOCOL, registerAssetProtocol } from "./lib/asset-protocol.mjs";
@@ -12,6 +12,7 @@ import { BackendClient } from "./lib/backend-client.mjs";
 import { DraftStore, SnapshotStore } from "./lib/local-history.mjs";
 import { DocumentSessionStore } from "./lib/document-session-store.mjs";
 import { readDocument } from "./lib/file-engine.mjs";
+import { openTargetFromArgv } from "./lib/open-target.mjs";
 import { ProjectRegistry } from "./lib/project-registry.mjs";
 import { shouldUsePersistentSecureStorage } from "./lib/secure-storage-policy.mjs";
 import { TokenVault } from "./lib/token-vault.mjs";
@@ -37,38 +38,6 @@ let watchService = null;
 let agentChangeServer = null;
 let updateService = null;
 let updateCheckTimer = null;
-let pendingExternalFile = null;
-let openExternalFile = null;
-
-const OPENABLE_DOCUMENT_EXTENSIONS = new Set([".md", ".markdown", ".mdx", ".json", ".jsonl"]);
-function supportedExternalFile(filePath) {
-  return path.isAbsolute(filePath || "") && OPENABLE_DOCUMENT_EXTENSIONS.has(path.extname(filePath).toLowerCase());
-}
-
-app.on("open-file", (event, filePath) => {
-  event.preventDefault();
-  if (!supportedExternalFile(filePath)) return;
-  if (openExternalFile) void openExternalFile(filePath).catch((error) => {
-    process.stderr.write(`Could not open the requested document: ${error?.code || error?.message || "OPEN_FAILED"}\n`);
-  });
-  else pendingExternalFile = filePath;
-});
-
-app.on("second-instance", (_event, argv) => {
-  const filePath = argv.find(supportedExternalFile);
-  if (filePath) {
-    if (openExternalFile) void openExternalFile(filePath).catch((error) => {
-      process.stderr.write(`Could not open the requested document: ${error?.code || error?.message || "OPEN_FAILED"}\n`);
-    });
-    else pendingExternalFile = filePath;
-    return;
-  }
-  if (!app.isReady()) return;
-  const window = mainWindow && !mainWindow.isDestroyed() ? mainWindow : createWindow();
-  if (window.isMinimized()) window.restore();
-  window.show();
-  window.focus();
-});
 
 function validatedDevServerUrl() {
   const value = process.env.VITE_DEV_SERVER_URL;
@@ -190,8 +159,37 @@ await app.whenReady();
 session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
 session.defaultSession.setPermissionCheckHandler(() => false);
 
-const registry = new ProjectRegistry({ filePath: path.join(userDataPath, "recent-projects.json") });
+const registry = new ProjectRegistry({
+  filePath: path.join(userDataPath, "recent-projects.json"),
+  startAccessing: process.mas ? (bookmark) => app.startAccessingSecurityScopedResource(bookmark) : null,
+});
 await registry.initialize();
+const showPrimaryWindow = () => {
+  const window =
+    (mainWindow && !mainWindow.isDestroyed() && mainWindow) ||
+    (onboardingWindow && !onboardingWindow.isDestroyed() && onboardingWindow) ||
+    (registry.listRecent().length ? createWindow() : createOnboardingWindow());
+  if (window.isMinimized()) window.restore();
+  window.show();
+  window.focus();
+};
+if (process.platform === "darwin") {
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    { role: "appMenu" },
+    { role: "editMenu" },
+    {
+      label: "Window",
+      submenu: [
+        { label: "Show Main Window", accelerator: "Command+0", click: showPrimaryWindow },
+        { type: "separator" },
+        { role: "minimize" },
+        { role: "zoom" },
+        { type: "separator" },
+        { role: "front" },
+      ],
+    },
+  ]));
+}
 disposeAssetProtocol = registerAssetProtocol(session.defaultSession.protocol, registry);
 const snapshotStore = new SnapshotStore(userDataPath);
 const draftStore = new DraftStore(userDataPath);
@@ -289,29 +287,32 @@ disposeIpc = registerIpcHandlers({
 if (registry.listRecent().length) createWindow();
 else createOnboardingWindow();
 
-openExternalFile = async (filePath) => {
-  if (!supportedExternalFile(filePath)) return;
-  const project = await registry.add(path.dirname(filePath));
-  const payload = await openProjectPayload(project, watchService);
+async function openExternalPath(targetPath) {
+  const payload = await openExternalPathPayload(targetPath, registry, watchService, {
+    window: mainWindow || onboardingWindow,
+    locale: app.getLocale(),
+  });
+  if (!payload) return;
   if (onboardingWindow && !onboardingWindow.isDestroyed()) onboardingWindow.close();
   const window = createWindow();
-  const send = () => window.webContents.send(CHANNELS.projectOpenFile, {
-    ...payload,
-    targetPath: path.basename(filePath),
-  });
+  const send = () => window.webContents.send(CHANNELS.projectOpenFile, payload);
   if (window.webContents.isLoadingMainFrame()) window.webContents.once("did-finish-load", send);
   else send();
   if (window.isMinimized()) window.restore();
   window.show();
   window.focus();
-};
+}
 
-const commandLineFile = process.argv.slice(1).find(supportedExternalFile);
-if (pendingExternalFile || commandLineFile) {
-  const filePath = pendingExternalFile || commandLineFile;
-  pendingExternalFile = null;
-  void openExternalFile(filePath).catch((error) => {
-    process.stderr.write(`Could not open the requested document: ${error?.code || error?.message || "OPEN_FAILED"}\n`);
+export async function handleLaunchRequest({ filePath, argv = [] }) {
+  const targetPath = filePath || openTargetFromArgv(argv);
+  if (targetPath) await openExternalPath(targetPath);
+  else showPrimaryWindow();
+}
+
+const commandLineTarget = openTargetFromArgv(process.argv.slice(1));
+if (commandLineTarget) {
+  void openExternalPath(commandLineTarget).catch((error) => {
+    process.stderr.write(`Could not open the requested path: ${error?.code || error?.message || "OPEN_FAILED"}\n`);
   });
 }
 updateService.on("state", (state) => {
@@ -340,6 +341,8 @@ app.on("before-quit", () => {
   if (updateCheckTimer) clearTimeout(updateCheckTimer);
   updateService?.dispose();
 });
+
+app.on("will-quit", () => registry.dispose());
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();

@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "Les mises à jour automatiques sont indisponibles dans cette version.",
         "UPDATE_FAILED": "Fylune n’a pas pu terminer la mise à jour. Les fichiers locaux n’ont pas été modifiés."
       }
+    },
+    "cli": {
+      "title": "Ligne de commande",
+      "description": "Ouvrez Fylune, des espaces de travail et des documents depuis tout terminal. Les agents utilisent la même commande pour collaborer en toute sécurité.",
+      "loading": "Mise à jour…",
+      "install": "Installer le CLI",
+      "repair": "Réparer le CLI",
+      "uninstall": "Désinstaller le CLI",
+      "installed": "La commande fylune est installée dans {path}.",
+      "copyPath": "Copier la commande PATH",
+      "copied": "Copié",
+      "unavailableAppStore": "La version App Store utilise un lanceur installé depuis Terminal pour ouvrir fichiers et dossiers. Les commandes agent et doctor nécessitent la version en téléchargement direct.",
+      "unavailable": "L’outil en ligne de commande n’est pas disponible dans cette version.",
+      "conflict": "Un autre fichier existe déjà dans {path}. Fylune ne le remplacera pas.",
+      "failed": "Fylune n’a pas pu mettre à jour l’outil en ligne de commande.",
+      "copyInstall": "Copier la commande d’installation",
+      "terminalSteps": "Collez la commande dans Terminal et appuyez sur Entrée. Seul le lanceur est installé dans ~/.local/bin ; sans mot de passe administrateur, téléchargement ni modification du profil shell.",
+      "showCommand": "Voir la commande",
+      "tryCommand": "Essayez dans Terminal :",
+      "pathHelp": "Si fylune est introuvable, exécutez cette commande. Ajoutez la même ligne à ~/.zshrc (zsh) ou ~/.bash_profile (bash) pour les futurs terminaux."
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "reload": "Recharger depuis le disque",
     "fidelityNote": "La modification réécrit le classeur. Les valeurs, formats et formules des cellules sont conservés ; les graphiques et tableaux croisés dynamiques peuvent ne pas survivre à la réécriture."
   },
+  "json": {
+    "editing": "Modification de {title}",
+    "format": "Formater",
+    "jsonEditor": "Éditeur JSON",
+    "jsonlEditor": "Éditeur JSONL",
+    "validJson": "JSON valide",
+    "validJsonl": "JSONL valide"
+  },
   "slides": {
     "opening": "Ouverture de la présentation…",
     "slides": "Diapositives",
@@ -520,14 +548,6 @@
     "video": "Vidéo",
     "audio": "Audio",
     "unsupportedElement": "Objet de diapositive"
-  },
-  "json": {
-    "editing": "Modification de {title}",
-    "format": "Formater",
-    "jsonEditor": "Éditeur JSON",
-    "jsonlEditor": "Éditeur JSONL",
-    "validJson": "JSON valide",
-    "validJsonl": "JSONL valide"
   },
   "legacyOffice": {
     "title": "Les fichiers {format} s’ouvrent dans leur application d’origine",

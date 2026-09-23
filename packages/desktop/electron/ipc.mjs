@@ -1,5 +1,7 @@
 import { clipboard, dialog, ipcMain, shell } from "electron";
-import { stat } from "node:fs/promises";
+import { constants } from "node:fs";
+import { access, realpath, stat } from "node:fs/promises";
+import path from "node:path";
 
 import { CHANNELS } from "./channels.mjs";
 import {
@@ -27,6 +29,7 @@ import { importAsset, readableAssetTypeForPath } from "./lib/assets.mjs";
 import { readOfficeAsset, readWorkbook, writeWorkbookEdits } from "./lib/office.mjs";
 import {
   duplicateWorkspaceFile,
+  readExternalDocument,
   readDocument,
   readDocumentPreview,
   renameWorkspaceFile,
@@ -37,7 +40,9 @@ import {
 import { restoreSnapshot } from "./lib/local-history.mjs";
 import { nativeMessage } from "./lib/native-i18n.mjs";
 import { toPublicError } from "./lib/errors.mjs";
-import { resolveProjectPath } from "./lib/path-security.mjs";
+import { cliOptionsFromApp, getCliStatus, installCli, uninstallCli } from "./lib/cli-installer.mjs";
+import { resolveOpenTarget } from "./lib/open-target.mjs";
+import { isWithin, resolveProjectPath } from "./lib/path-security.mjs";
 import { openWorkspaceEntryInTerminal, revealWorkspaceEntryInFinder } from "./lib/workspace-shell.mjs";
 
 function registerHandler(channel, schema, handler) {
@@ -64,6 +69,79 @@ export async function openProjectPayload(project, watchService) {
   };
 }
 
+async function authorizeExternalDirectory(root, registry, { window = null, locale = "en" } = {}) {
+  if (!process.mas) return true;
+  for (const recent of registry.listRecent()) {
+    if (!isWithin(recent.path, root)) continue;
+    try {
+      // Activate the saved scope before touching the directory, not just the opened file.
+      if (!registry.get(recent.projectId).bookmark) continue;
+      await access(root, constants.R_OK);
+      return true;
+    } catch {
+      // A stale grant must be renewed through the system picker.
+    }
+  }
+  const result = await dialog.showOpenDialog(window, {
+    title: nativeMessage(locale, "documentFolderAccessTitle"),
+    message: nativeMessage(locale, "documentFolderAccessMessage"),
+    buttonLabel: nativeMessage(locale, "documentFolderAccessButton"),
+    defaultPath: root,
+    properties: ["openDirectory", "showHiddenFiles"],
+    securityScopedBookmarks: true,
+  });
+  if (result.canceled || !result.filePaths[0]) return false;
+  const selected = await realpath(result.filePaths[0]);
+  if (selected !== await realpath(root) || !result.bookmarks?.[0]) {
+    await dialog.showMessageBox(window, {
+      type: "warning",
+      message: nativeMessage(locale, "documentFolderAccessInvalid"),
+    });
+    return false;
+  }
+  const project = await registry.add(selected, result.bookmarks[0]);
+  registry.get(project.id);
+  return true;
+}
+
+export async function openExternalFilePayload(filePath, registry, options) {
+  if (!await authorizeExternalDirectory(path.dirname(filePath), registry, options)) return null;
+  const project = await registry.addExternalFile(filePath);
+  const document = await readExternalDocument(project.externalFile);
+  const extension = path.extname(document.path).slice(1).toLowerCase();
+  return {
+    projectId: project.id,
+    name: project.name,
+    path: project.root,
+    targetPath: document.path,
+    targetDocument: document,
+    tree: {
+      kind: "directory",
+      name: project.name,
+      path: "",
+      loaded: true,
+      itemCount: 1,
+      children: [{
+        kind: "file",
+        fileType: "document",
+        name: document.path,
+        path: document.path,
+        extension,
+        size: document.size,
+        mtimeMs: document.mtimeMs,
+      }],
+    },
+  };
+}
+
+export async function openExternalPathPayload(targetPath, registry, watchService, options) {
+  const target = await resolveOpenTarget(targetPath);
+  if (target.kind === "file") return openExternalFilePayload(target.path, registry, options);
+  if (!await authorizeExternalDirectory(target.path, registry, options)) return null;
+  const project = await registry.add(target.path);
+  return openProjectPayload(project, watchService);
+}
+
 export function registerIpcHandlers({
   app,
   getWindow,
@@ -88,6 +166,9 @@ export function registerIpcHandlers({
     await completeOnboarding();
     return { completed: true };
   });
+  registerHandler(CHANNELS.cliGetStatus, emptySchema, async () => getCliStatus(cliOptionsFromApp(app)));
+  registerHandler(CHANNELS.cliInstall, emptySchema, async () => installCli(cliOptionsFromApp(app)));
+  registerHandler(CHANNELS.cliUninstall, emptySchema, async () => uninstallCli(cliOptionsFromApp(app)));
 
   registerHandler(CHANNELS.projectPick, emptySchema, async () => {
     const locale = app.getLocale();
@@ -95,9 +176,10 @@ export function registerIpcHandlers({
       title: nativeMessage(locale, "openProjectTitle"),
       buttonLabel: nativeMessage(locale, "openProjectButton"),
       properties: ["openDirectory"],
+      securityScopedBookmarks: Boolean(process.mas),
     });
     if (result.canceled || !result.filePaths[0]) return null;
-    const project = await registry.add(result.filePaths[0]);
+    const project = await registry.add(result.filePaths[0], result.bookmarks?.[0]);
     return openProjectPayload(project, watchService);
   });
 
@@ -107,9 +189,10 @@ export function registerIpcHandlers({
       title: nativeMessage(locale, "createProjectTitle"),
       buttonLabel: nativeMessage(locale, "createProjectButton"),
       properties: ["openDirectory", "createDirectory"],
+      securityScopedBookmarks: Boolean(process.mas),
     });
     if (result.canceled || !result.filePaths[0]) return null;
-    const project = await registry.add(result.filePaths[0]);
+    const project = await registry.add(result.filePaths[0], result.bookmarks?.[0]);
     return openProjectPayload(project, watchService);
   });
 

@@ -63,6 +63,15 @@ describe("editor code block theme", () => {
     expect(source).toContain("syntaxHighlighting(syntaxTheme)");
   });
 
+  it("highlights an active line only while its CodeMirror editor is focused", () => {
+    expect(source).toMatch(
+      /"\.cm-activeLine, \.cm-activeLineGutter": \{\s*backgroundColor: "transparent"/,
+    );
+    expect(source).toContain(
+      '"&.cm-focused .cm-activeLine, &.cm-focused .cm-activeLineGutter"',
+    );
+  });
+
   it("registers the theme at the highest CodeMirror precedence", () => {
     expect(source).toContain("Prec.highest");
     expect(appSource).toContain("codeMirrorExtensions: [fyluneCodeMirrorTheme]");
@@ -74,6 +83,9 @@ describe("editor code block theme", () => {
     );
     expect(editorStyles).toMatch(
       /\.fylune-mdx-editor \[class\*="_codeMirrorToolbar_"\] \{[\s\S]*background: var\(--surface-elevated\);[\s\S]*color: var\(--muted\);/,
+    );
+    expect(editorStyles).toMatch(
+      /\.fylune-mdx-editor \[class\*="_codeMirrorToolbar_"\]:has\(:disabled\) \{\s*display: none;/,
     );
     expect(editorStyles).toMatch(
       /\.fylune-mdx-editor \.mdxeditor-select-content \{[\s\S]*background: var\(--surface-elevated\);[\s\S]*color: var\(--ink\);/,

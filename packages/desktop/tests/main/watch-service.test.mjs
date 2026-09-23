@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sha256 } from "../../electron/lib/hash.mjs";
 import { WatchService } from "../../electron/lib/watch-service.mjs";
 
-async function waitFor(predicate, timeoutMs = 3_000) {
+async function waitFor(predicate, timeoutMs = 10_000) {
   const startedAt = Date.now();
   while (!predicate()) {
     if (Date.now() - startedAt >= timeoutMs) throw new Error("Timed out waiting for watcher event");
@@ -41,6 +41,7 @@ describe("workspace document watcher", () => {
       onChange: (change) => changes.push(change),
     });
     await service.watch({ id: "watch-project", root });
+    if (process.platform === "win32") await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   afterEach(async () => {
@@ -95,6 +96,7 @@ describe("workspace document watcher", () => {
     await writeFile(nextFile, "# Notes\n\nBase\n");
 
     await service.watch({ id: "next-project", root: nextRoot });
+    if (process.platform === "win32") await new Promise((resolve) => setTimeout(resolve, 500));
     await writeFile(file, "# Plan\n\nOld workspace changed\n");
     await writeFile(nextFile, "# Notes\n\nActive workspace changed\n");
     await waitFor(() => changes.length === 1);

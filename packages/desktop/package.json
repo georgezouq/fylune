@@ -23,7 +23,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src electron tests --max-warnings=0",
     "test": "pnpm test:unit",
-    "test:unit": "vitest run --config vitest.config.mjs && vitest run --config vitest.main.config.mjs"
+    "test:unit": "vitest run --config vitest.config.mjs && vitest run --config vitest.main.config.mjs",
+    "cli:link": "node scripts/link-cli.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fylune/document-collaboration": "workspace:*",
@@ -35,7 +37,7 @@
     "jszip": "^3.10.1",
     "mammoth": "^1.12.0",
     "numfmt": "^3.2.6",
-    "pdfjs-dist": "6.1.200",
+    "pdfjs-dist": "6.2.108",
     "pptxtojson": "^2.1.0",
     "typebox": "^1.3.8",
     "write-file-atomic": "7.0.0",
@@ -74,7 +76,7 @@
     "katex": "0.18.1",
     "lexical": "0.48.0",
     "mdast-util-math": "3.0.0",
-    "mermaid": "11.16.0",
+    "mermaid": "11.16.1",
     "micromark-extension-math": "3.1.0",
     "nanoid": "5.1.6",
     "react": "19.2.0",
@@ -86,7 +88,8 @@
     "vitest": "4.0.17",
     "wait-on": "9.0.3",
     "yaml": "2.9.0",
-    "zustand": "5.0.11"
+    "zustand": "5.0.11",
+    "@playwright/test": "1.58.2"
   },
   "build": {
     "appId": "com.starseek.fylune",

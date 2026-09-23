@@ -94,6 +94,19 @@ pnpm dev:desktop
 
 The desktop app opens with a fully local profile. No backend is required.
 
+### Command line
+
+Open Settings → Command line to install the `fylune` command. For a source checkout, run `pnpm build` and `pnpm --filter @fylune/desktop cli:link`. Add `~/.local/bin` to your shell's `PATH` if prompted.
+
+```bash
+fylune .
+fylune docs/notes.md
+fylune doctor --json
+fylune agent workspaces --json
+```
+
+The CLI opens folders or individual documents and connects agents to the running local app. Opening an existing document preserves its original bytes until you edit it. Concurrent file changes remain protected by expected-content checks.
+
 ### Desktop with optional accounts
 
 ```bash
@@ -120,7 +133,8 @@ The desktop process owns filesystem access and exposes a small validated IPC sur
 
 ## Privacy by design
 
-- Document content, names, paths, and workspace metadata stay on the device.
+- Local editing and the local Agent protocol keep document content, names, paths, and workspace metadata on the device.
+- If you explicitly use the optional self-hosted Agent proxy, the prompt you submit is sent to your configured backend and AI provider. Keep credentials on the backend and only submit content you intend to share with that provider.
 - Local editing never requires login or connectivity.
 - Files are written only after an expected-content check.
 - No telemetry is included in the open-source build.
@@ -134,8 +148,12 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm --filter @fylune/desktop exec playwright install chromium
+pnpm --filter @fylune/desktop test:e2e
 pnpm --filter @fylune/desktop pack
 ```
+
+The end-to-end suite checks real file saves, empty files, and external-write conflicts. On macOS it also launches an isolated Electron profile to check Finder-style cold starts and subsequent file-open requests. Test artifacts are written under `tmp/qa/`. See [CONTRIBUTING.md](CONTRIBUTING.md) for dependency and source-history checks before publishing.
 
 ## Scope
 

@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "التحديثات التلقائية غير متاحة في هذا الإصدار.",
         "UPDATE_FAILED": "تعذر على Fylune إكمال التحديث. لم يتم تغيير الملفات المحلية."
       }
+    },
+    "cli": {
+      "title": "سطر الأوامر",
+      "description": "افتح Fylune ومساحات العمل والمستندات من أي طرفية. تستخدم الوكلاء الأمر نفسه للتعاون المحلي الآمن.",
+      "loading": "جارٍ التحديث…",
+      "install": "تثبيت CLI",
+      "repair": "إصلاح CLI",
+      "uninstall": "إزالة CLI",
+      "installed": "تم تثبيت الأمر fylune في {path}.",
+      "copyPath": "نسخ أمر PATH",
+      "copied": "تم النسخ",
+      "unavailableAppStore": "يستخدم إصدار App Store مشغّلًا يُثبَّت من الطرفية لفتح الملفات والمجلدات. تتطلب أوامر agent وdoctor الإصدار الذي يُنزَّل مباشرة.",
+      "unavailable": "أداة سطر الأوامر غير متاحة في هذا الإصدار.",
+      "conflict": "يوجد ملف آخر بالفعل في {path}. لن يستبدله Fylune.",
+      "failed": "تعذر على Fylune تحديث أداة سطر الأوامر.",
+      "copyInstall": "نسخ أمر التثبيت",
+      "terminalSteps": "الصق الأمر في Terminal واضغط Return. يُثبَّت المشغّل فقط في ~/.local/bin، دون كلمة مرور مسؤول أو تنزيلات أو تعديل ملف إعدادات الصدفة.",
+      "showCommand": "عرض أمر التثبيت",
+      "tryCommand": "جرّب في Terminal:",
+      "pathHelp": "إذا لم يُعثر على fylune، نفّذ هذا الأمر. أضف السطر نفسه إلى ~/.zshrc (zsh) أو ~/.bash_profile (bash) لاستخدامه في جلسات الطرفية القادمة."
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "reload": "إعادة التحميل من القرص",
     "fidelityNote": "يؤدي التحرير إلى إعادة كتابة المصنّف. تبقى قيم الخلايا والتنسيقات والصيغ؛ وقد لا تبقى المخططات والجداول المحورية."
   },
+  "json": {
+    "editing": "تحرير {title}",
+    "format": "تنسيق",
+    "jsonEditor": "محرر JSON",
+    "jsonlEditor": "محرر JSONL",
+    "validJson": "JSON صالح",
+    "validJsonl": "JSONL صالح"
+  },
   "slides": {
     "opening": "جارٍ فتح العرض التقديمي…",
     "slides": "الشرائح",
@@ -520,14 +548,6 @@
     "video": "فيديو",
     "audio": "صوت",
     "unsupportedElement": "كائن شريحة"
-  },
-  "json": {
-    "editing": "تحرير {title}",
-    "format": "تنسيق",
-    "jsonEditor": "محرر JSON",
-    "jsonlEditor": "محرر JSONL",
-    "validJson": "JSON صالح",
-    "validJsonl": "JSONL صالح"
   },
   "legacyOffice": {
     "title": "تُفتح ملفات {format} في تطبيقها الأصلي",

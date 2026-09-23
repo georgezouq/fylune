@@ -1,6 +1,6 @@
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, realpath } from "node:fs/promises";
 import writeFileAtomic from "write-file-atomic";
 
 import { canonicalProjectRoot } from "./path-security.mjs";
@@ -31,10 +31,13 @@ export class ProjectRegistry {
   #projects = new Map();
   #filePath;
   #limit;
+  #startAccessing;
+  #access = new Map();
 
-  constructor({ filePath = null, limit = DEFAULT_RECENT_LIMIT } = {}) {
+  constructor({ filePath = null, limit = DEFAULT_RECENT_LIMIT, startAccessing = null } = {}) {
     this.#filePath = filePath;
     this.#limit = limit;
+    this.#startAccessing = startAccessing;
   }
 
   async initialize() {
@@ -50,12 +53,18 @@ export class ProjectRegistry {
     }
   }
 
-  async add(root) {
+  async add(root, bookmark) {
     const canonicalRoot = await canonicalProjectRoot(root);
     for (const project of this.#projects.values()) {
       if (project.root === canonicalRoot) {
         project.name = path.basename(canonicalRoot);
         project.lastOpenedAt = new Date().toISOString();
+        delete project.ephemeral;
+        delete project.externalFile;
+        if (typeof bookmark === "string" && bookmark) {
+          this.#stopAccessing(project.id);
+          project.bookmark = bookmark;
+        }
         this.#moveToFront(project);
         await this.#persist();
         return project;
@@ -66,9 +75,34 @@ export class ProjectRegistry {
       name: path.basename(canonicalRoot),
       root: canonicalRoot,
       lastOpenedAt: new Date().toISOString(),
+      ...(typeof bookmark === "string" && bookmark ? { bookmark } : {}),
     };
     this.#moveToFront(project);
     await this.#persist();
+    return project;
+  }
+
+  async addExternalFile(filePath) {
+    const sourceInfo = await lstat(filePath);
+    if (!sourceInfo.isFile() || sourceInfo.isSymbolicLink()) {
+      throw new FyluneError("UNSUPPORTED_FILE", "The selected path is not a document.");
+    }
+    const externalFile = await realpath(filePath);
+    const root = path.dirname(externalFile);
+    const project = {
+      id: randomUUID(),
+      name: path.basename(root),
+      root,
+      externalFile,
+      ephemeral: true,
+      lastOpenedAt: new Date().toISOString(),
+    };
+    this.#projects = new Map([
+      [project.id, project],
+      ...[...this.#projects.values()]
+        .filter((candidate) => !candidate.ephemeral)
+        .map((candidate) => [candidate.id, candidate]),
+    ]);
     return project;
   }
 
@@ -91,6 +125,7 @@ export class ProjectRegistry {
   }
 
   async remove(projectId) {
+    this.#stopAccessing(projectId);
     const removed = this.#projects.delete(projectId);
     if (removed) await this.#persist();
     return removed;
@@ -101,7 +136,19 @@ export class ProjectRegistry {
     if (!project) {
       throw new FyluneError("PROJECT_NOT_OPEN", "Open the project folder again to continue.");
     }
+    if (this.#startAccessing && typeof project.bookmark === "string" && project.bookmark && !this.#access.has(projectId)) {
+      this.#access.set(projectId, this.#startAccessing(project.bookmark));
+    }
     return project;
+  }
+
+  dispose() {
+    for (const projectId of this.#access.keys()) this.#stopAccessing(projectId);
+  }
+
+  #stopAccessing(projectId) {
+    this.#access.get(projectId)?.();
+    this.#access.delete(projectId);
   }
 
   list() {
@@ -109,7 +156,7 @@ export class ProjectRegistry {
   }
 
   listRecent() {
-    return [...this.#projects.values()].map(publicProject);
+    return [...this.#projects.values()].filter((project) => !project.ephemeral).map(publicProject);
   }
 
   #moveToFront(project) {
@@ -117,6 +164,9 @@ export class ProjectRegistry {
       candidate.id !== project.id || index === 0
     )).slice(0, this.#limit);
     this.#projects = new Map(ordered.map((candidate) => [candidate.id, candidate]));
+    for (const projectId of this.#access.keys()) {
+      if (!this.#projects.has(projectId)) this.#stopAccessing(projectId);
+    }
   }
 
   async #persist() {
@@ -124,7 +174,7 @@ export class ProjectRegistry {
     await mkdir(path.dirname(this.#filePath), { recursive: true });
     const state = {
       version: RECENT_PROJECTS_VERSION,
-      projects: [...this.#projects.values()],
+      projects: [...this.#projects.values()].filter((project) => !project.ephemeral),
     };
     await writeFileAtomic(this.#filePath, JSON.stringify(state), { encoding: "utf8", fsync: true });
   }

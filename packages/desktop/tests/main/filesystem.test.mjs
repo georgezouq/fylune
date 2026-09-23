@@ -3,7 +3,7 @@ import path from "node:path";
 import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { readDocument, readDocumentPreview, scanProject } from "../../electron/lib/file-engine.mjs";
+import { readDocument, readDocumentPreview, readExternalDocument, scanProject } from "../../electron/lib/file-engine.mjs";
 import { sha256 } from "../../electron/lib/hash.mjs";
 
 describe("project filesystem", () => {
@@ -117,6 +117,15 @@ describe("project filesystem", () => {
     });
     await expect(readDocument(root, "notes/events.jsonl")).resolves.toMatchObject({
       content: '{"event":"open"}\n',
+      readOnly: false,
+    });
+  });
+
+  it("reads one externally opened JSON document without scanning its parent directory", async () => {
+    await expect(readExternalDocument(path.join(root, "notes", "settings.json"))).resolves.toMatchObject({
+      path: "settings.json",
+      content: '{"theme":"dark"}\n',
+      hash: sha256('{"theme":"dark"}\n'),
       readOnly: false,
     });
   });

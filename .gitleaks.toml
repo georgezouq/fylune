@@ -1,0 +1,11 @@
+title = "Fylune source and history scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Nonfunctional JWT placeholder in the local setup examples"
+condition = "AND"
+paths = ['''^(.*/)?\.env\.example$''']
+regexTarget = "secret"
+regexes = ['''^replace-with-at-least-32-characters$''']
