@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "此建置版本不提供自動更新。",
         "UPDATE_FAILED": "Fylune 無法完成更新，本機檔案未被變更。"
       }
+    },
+    "cli": {
+      "title": "命令列工具",
+      "description": "從任意終端機開啟 Fylune、工作空間和文件；Agent 也透過同一個命令安全協作。",
+      "loading": "正在更新…",
+      "install": "安裝 CLI",
+      "repair": "修復 CLI",
+      "uninstall": "解除安裝 CLI",
+      "installed": "fylune 命令已安裝到 {path}。",
+      "copyPath": "複製 PATH 命令",
+      "copied": "已複製",
+      "unavailableAppStore": "App Store 版透過終端機安裝啟動器以開啟檔案與資料夾。Agent 與 doctor 指令需要直接下載版。",
+      "unavailable": "此建置版本不提供命令列工具。",
+      "conflict": "{path} 已有其他檔案，Fylune 不會覆寫它。",
+      "failed": "Fylune 無法更新命令列工具。",
+      "copyInstall": "複製安裝指令",
+      "terminalSteps": "在終端機貼上指令並按 Return。僅將啟動器安裝至 ~/.local/bin；不需管理員密碼、不下載檔案，也不修改 Shell 設定。",
+      "showCommand": "查看安裝指令",
+      "tryCommand": "在終端機試試：",
+      "pathHelp": "若找不到 fylune，請在終端機執行下方指令。將同一行加入 ~/.zshrc（zsh）或 ~/.bash_profile（bash），即可供之後的終端機使用。"
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "fidelityNote": "編輯會重寫整個活頁簿。儲存格的值、格式與公式會保留；圖表和樞紐分析表可能無法保留。",
     "sheetCount_one": "{count} 個工作表"
   },
+  "json": {
+    "editing": "正在編輯 {title}",
+    "format": "格式化",
+    "jsonEditor": "JSON 編輯器",
+    "jsonlEditor": "JSONL 編輯器",
+    "validJson": "JSON 格式有效",
+    "validJsonl": "JSONL 格式有效"
+  },
   "slides": {
     "opening": "正在開啟簡報…",
     "slides": "投影片",
@@ -520,14 +548,6 @@
     "audio": "音訊",
     "unsupportedElement": "投影片物件",
     "slideCount_one": "{count} 張投影片"
-  },
-  "json": {
-    "editing": "正在編輯 {title}",
-    "format": "格式化",
-    "jsonEditor": "JSON 編輯器",
-    "jsonlEditor": "JSONL 編輯器",
-    "validJson": "JSON 格式有效",
-    "validJsonl": "JSONL 格式有效"
   },
   "legacyOffice": {
     "title": "{format} 檔案需在原應用程式中開啟",

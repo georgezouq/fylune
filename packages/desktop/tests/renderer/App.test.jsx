@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars -- the base ESLint config does not mark JSX references as usage */
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -30,6 +30,64 @@ async function expandTreeFolder(user, name) {
 }
 
 describe("Fylune renderer", () => {
+  it("offers App Store CLI installation instructions without attempting a sandbox write", async () => {
+    vi.spyOn(demoBridge, "getCliStatus").mockResolvedValue({
+      status: "unavailable", reason: "app-store", manualInstallCommand: "safe-install-command",
+    });
+    const install = vi.spyOn(demoBridge, "installCli");
+    const copy = vi.spyOn(demoBridge, "copyText").mockResolvedValue({ copied: true });
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Settings" }));
+    const dialog = screen.getByRole("dialog", { name: "Settings" });
+    await user.click(await within(dialog).findByRole("button", { name: "Copy install command" }));
+    expect(copy).toHaveBeenCalledWith("safe-install-command");
+    expect(install).not.toHaveBeenCalled();
+    expect(within(dialog).getByText(/Paste the command into Terminal/)).toBeInTheDocument();
+    expect(within(dialog).queryByText(/The fylune command is installed/)).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: "Copy PATH command" }));
+    expect(copy).toHaveBeenLastCalledWith('export PATH="$HOME/.local/bin:$PATH"');
+  });
+
+  it("installs the direct-build CLI and exposes uninstall after success", async () => {
+    vi.spyOn(demoBridge, "getCliStatus").mockResolvedValue({ status: "not-installed" });
+    const install = vi.spyOn(demoBridge, "installCli").mockResolvedValue({ status: "installed", installPath: "~/.local/bin/fylune", pathConfigured: false });
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Settings" }));
+    await user.click(await screen.findByRole("button", { name: "Install CLI" }));
+    expect(install).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole("button", { name: "Uninstall CLI" })).toBeInTheDocument();
+    expect(screen.getByText("fylune .")).toBeInTheDocument();
+  });
+
+
+  it("opens literal object syntax in Markdown as ordinary document text", async () => {
+    Range.prototype.getClientRects ??= () => [];
+    Range.prototype.getBoundingClientRect ??= () => ({
+      bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0, x: 0, y: 0, toJSON: () => ({}),
+    });
+    const markdown = "### 登录响应\n\n返回格式 {\"success\":true,\"data\":{\"displayName\":\"张三\"}}\n";
+    vi.spyOn(demoBridge, "onExternalFileOpen").mockImplementation((callback) => {
+      queueMicrotask(() => callback({
+        id: "external-markdown",
+        name: "Downloads",
+        path: "/Users/test/Downloads",
+        targetPath: "统一登录.md",
+        targetDocument: { path: "统一登录.md", content: markdown },
+        tree: [{ id: "统一登录.md", type: "document", name: "统一登录.md", path: "统一登录.md" }],
+      }));
+      return () => {};
+    });
+
+    render(<App />);
+
+    await screen.findByRole("textbox", { name: "Document title" });
+    await waitFor(() => expect(document.querySelector(".fylune-mdx-content")).toHaveTextContent("返回格式"));
+    expect(document.querySelector(".mdxeditor-source-editor")).not.toBeInTheDocument();
+  });
+
+
   beforeEach(() => {
     const values = new Map();
     Object.defineProperty(window, "localStorage", {
@@ -53,6 +111,33 @@ describe("Fylune renderer", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+  });
+
+  it("opens an externally supplied JSON document without waiting for a workspace scan", async () => {
+    Range.prototype.getClientRects ??= () => [];
+    Range.prototype.getBoundingClientRect ??= () => ({
+      bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0, x: 0, y: 0, toJSON: () => ({}),
+    });
+    const readDocument = vi.spyOn(demoBridge, "readDocument");
+    vi.spyOn(demoBridge, "onExternalFileOpen").mockImplementation((callback) => {
+      queueMicrotask(() => callback({
+        id: "external-json",
+        name: "Downloads",
+        path: "/Users/test/Downloads",
+        targetPath: "settings.json",
+        targetDocument: { path: "settings.json", content: '{"theme":"dark"}\n', readOnly: true },
+        tree: [{ id: "settings.json", type: "document", name: "settings.json", path: "settings.json" }],
+      }));
+      return () => {};
+    });
+
+    render(<App />);
+
+    expect(await screen.findByRole("textbox", { name: "JSON editor" })).toHaveTextContent('"theme":"dark"');
+    expect(document.querySelector(".fylune-app")).toHaveClass("is-sidebar-collapsed");
+    expect(screen.queryByRole("complementary", { name: "Workspace navigation" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show sidebar" })).toBeInTheDocument();
+    expect(readDocument).not.toHaveBeenCalledWith("settings.json");
   });
 
   it("shows the current project, real folder tree, and document previews", async () => {
@@ -650,7 +735,10 @@ describe("Fylune renderer", () => {
 
   it("performs a real local save for Command-S and leaves the spinner", async () => {
     const user = userEvent.setup();
-    const saveSpy = vi.spyOn(demoBridge, "saveDocument");
+    let finishSave;
+    const saveSpy = vi.spyOn(demoBridge, "saveDocument").mockImplementation(() => new Promise((resolve) => {
+      finishSave = resolve;
+    }));
     render(<App />);
 
     await openLibraryDocument(user, "Product brief");
@@ -659,6 +747,7 @@ describe("Fylune renderer", () => {
 
     fireEvent.keyDown(window, { key: "s", metaKey: true });
     expect(document.querySelector(".save-status")).toHaveTextContent("Saving");
+    finishSave({ path: "Product/Product brief.mdx" });
     await waitFor(() => expect(document.querySelector(".save-status")).toHaveTextContent("Saved locally"), { timeout: 1500 });
     expect(saveSpy).toHaveBeenCalledTimes(1);
   });
@@ -674,6 +763,41 @@ describe("Fylune renderer", () => {
 
     expect(saveSpy).not.toHaveBeenCalled();
     expect(document.querySelector(".save-status")).toHaveTextContent("Saved locally");
+  });
+
+  it.each([
+    "## Imported notes\r\n\r\nVisit https://example.com/docs and www.example.com.\r\n\r\n*   A list item\r\n\r\n```js\r\nconst ready = true;\r\n```\r\n",
+    "# Notes\n\nEmail hello@example.com or use [the guide](https://example.com/guide).\n",
+    "",
+  ])("preserves untouched imported Markdown through mount, manual save, and close (%#)", async (content) => {
+    const user = userEvent.setup();
+    const saveSpy = vi.spyOn(demoBridge, "saveDocument").mockResolvedValue({ path: "Notes.md" });
+    const draftSpy = vi.spyOn(demoBridge, "saveDraft");
+    vi.spyOn(demoBridge, "onExternalFileOpen").mockImplementation((callback) => {
+      queueMicrotask(() => callback({
+        id: "external-notes",
+        name: "Downloads",
+        path: "/Users/test/Downloads",
+        targetPath: "Notes.md",
+        targetDocument: { path: "Notes.md", content, readOnly: false },
+        tree: [{ id: "Notes.md", type: "document", name: "Notes.md", path: "Notes.md" }],
+      }));
+      return () => {};
+    });
+    render(<App />);
+    await screen.findByRole("region", { name: "Editing Notes" });
+    await act(() => new Promise((resolve) => window.setTimeout(resolve, 700)));
+    expect(saveSpy).not.toHaveBeenCalled();
+    expect(draftSpy).not.toHaveBeenCalled();
+    expect(document.querySelector(".save-status")).toHaveTextContent("Saved locally");
+
+    fireEvent.keyDown(window, { key: "s", metaKey: true });
+    await waitFor(() => expect(saveSpy).toHaveBeenCalledTimes(1));
+    expect(saveSpy).toHaveBeenLastCalledWith(expect.objectContaining({ path: "Notes.md", content }));
+    await waitFor(() => expect(document.querySelector(".save-status")).toHaveTextContent("Saved locally"));
+    await user.click(screen.getByRole("button", { name: "Close Notes" }));
+    expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(draftSpy).not.toHaveBeenCalled();
   });
 
   it("shows calm local-change feedback during the autosave debounce", async () => {

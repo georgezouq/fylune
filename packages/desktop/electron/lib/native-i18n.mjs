@@ -2,6 +2,10 @@ export const nativeLocales = ["en", "zh-CN", "zh-TW", "es", "fr", "it", "de", "j
 
 const messages = {
   en: {
+    documentFolderAccessTitle: "Allow access to the document folder",
+    documentFolderAccessMessage: "Opening one file does not grant access to its images. Select this document’s folder to load relative images and attachments. Cancel keeps your current document open.",
+    documentFolderAccessButton: "Allow folder access",
+    documentFolderAccessInvalid: "Select the document’s own folder to grant access. The document was not opened; try opening it again.",
     openProjectTitle: "Open a project folder",
     openProjectButton: "Open project",
     createProjectTitle: "Create a workspace folder",
@@ -12,6 +16,10 @@ const messages = {
     unsupportedPreview: "This preview is not available.",
   },
   "zh-CN": {
+    documentFolderAccessTitle: "允许访问文档所在文件夹",
+    documentFolderAccessMessage: "打开单个文件不会同时获得图片权限。请选择此文档所在的文件夹，以加载相对路径图片和附件。取消后保留当前文档。",
+    documentFolderAccessButton: "允许访问文件夹",
+    documentFolderAccessInvalid: "请选择文档自身所在的文件夹并授予权限。本次未打开文档，请重新打开后选择。",
     openProjectTitle: "打开项目文件夹",
     openProjectButton: "打开项目",
     createProjectTitle: "创建工作空间文件夹",
@@ -22,6 +30,10 @@ const messages = {
     unsupportedPreview: "此预览不可用。",
   },
   "zh-TW": {
+    documentFolderAccessTitle: "允許存取文件所在資料夾",
+    documentFolderAccessMessage: "開啟單一檔案不會同時取得圖片權限。請選擇此文件所在的資料夾，以載入相對路徑圖片和附件。取消後保留目前文件。",
+    documentFolderAccessButton: "允許存取資料夾",
+    documentFolderAccessInvalid: "請選擇文件本身所在的資料夾並授予權限。本次未開啟文件，請重新開啟後選擇。",
     openProjectTitle: "開啟專案資料夾",
     openProjectButton: "開啟專案",
     createProjectTitle: "建立工作空間資料夾",

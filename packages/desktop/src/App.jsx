@@ -9,12 +9,14 @@ import {
 } from "@fylune/document-collaboration";
 import { FyluneDocument } from "@fylune/components";
 import {
+  addExportVisitor$,
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
   codeBlockPlugin,
   codeMirrorPlugin,
   CodeToggle,
   CreateLink,
+  diffSourcePlugin,
   headingsPlugin,
   imagePlugin,
   jsxPlugin,
@@ -23,13 +25,16 @@ import {
   ListsToggle,
   listsPlugin,
   markdownShortcutPlugin,
+  markdownProcessingError$,
   MDXEditor,
   quotePlugin,
+  realmPlugin,
   searchPlugin,
   tablePlugin,
   thematicBreakPlugin,
   toolbarPlugin,
   UndoRedo,
+  viewMode$,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import {
@@ -234,12 +239,37 @@ const structuredDescriptors = ["Decision", "Experiment", "Brief"].map((name) => 
   Editor: EmbeddedStructuredBlock,
 }));
 
+const markdownSourceFallbackPlugin = realmPlugin({
+  postInit(realm) {
+    const showSourceOnError = (error) => {
+      if (error) realm.pub(viewMode$, "source");
+    };
+    realm.sub(markdownProcessingError$, showSourceOnError);
+    showSourceOnError(realm.getValue(markdownProcessingError$));
+  },
+});
+
+// Autolinking is a visual enhancement, not a change to the source file.
+// Explicit Markdown links keep the editor's normal link serializer.
+const preserveAutoLinkSourcePlugin = realmPlugin({
+  init(realm) {
+    realm.pub(addExportVisitor$, {
+      priority: 1,
+      testLexicalNode: (node) => node.getType() === "autolink",
+      visitLexicalNode: ({ lexicalNode, mdastParent, actions }) => {
+        actions.visitChildren(lexicalNode, mdastParent);
+      },
+    });
+  },
+});
+
 const baseEditorPlugins = [
   headingsPlugin(),
   listsPlugin(),
   quotePlugin(),
   thematicBreakPlugin(),
   linkPlugin(),
+  preserveAutoLinkSourcePlugin(),
   linkDialogPlugin(),
   tablePlugin(),
   codeBlockPlugin({ defaultCodeBlockLanguage: "text", codeBlockEditorDescriptors: specialCodeBlockEditorDescriptors }),
@@ -247,11 +277,12 @@ const baseEditorPlugins = [
     codeBlockLanguages: { text: "Plain text", js: "JavaScript", ts: "TypeScript", json: "JSON", mdx: "MDX" },
     codeMirrorExtensions: [fyluneCodeMirrorTheme],
   }),
-  jsxPlugin({ jsxComponentDescriptors: structuredDescriptors, allowFragment: true }),
   specialMarkdownPlugin(),
   searchPlugin(),
   documentSearchUiPlugin(),
   markdownShortcutPlugin(),
+  diffSourcePlugin({ viewMode: "rich-text", codeMirrorExtensions: [fyluneCodeMirrorTheme] }),
+  markdownSourceFallbackPlugin(),
 ];
 
 const slashCommands = [
@@ -2441,7 +2472,6 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
   const wordCountTimer = useRef(null);
   const dirty = useRef(false);
   const changedSinceMount = useRef(false);
-  const editorReady = useRef(false);
   const compositionActive = useRef(false);
   const pendingExternalChange = useRef(null);
   const integratedPreviewState = useRef(null);
@@ -2486,6 +2516,9 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
 
   const editorPlugins = useMemo(() => [
     ...baseEditorPlugins,
+    ...(documentPath?.toLowerCase().endsWith(".mdx")
+      ? [jsxPlugin({ jsxComponentDescriptors: structuredDescriptors, allowFragment: true })]
+      : []),
     editorCollaborationPlugin({ controllerRef: collaborationEditorRef }),
     imagePlugin({
       imagePreviewHandler: async (imageSource) => bridge.previewDocumentAsset?.(imageSource, documentPath) || imageSource,
@@ -2555,7 +2588,6 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     dirty.current = false;
     changedSinceMount.current = false;
-    editorReady.current = false;
     integratedPreviewState.current = null;
     setFormattingVisible(false);
     setSlashMenu(null);
@@ -3014,7 +3046,7 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
   }, [documentPath, onSaveStatus, processExternalChange, t]);
 
   useEffect(() => {
-    trackUserSource(fullSource());
+    if (dirty.current) trackUserSource(fullSource());
   }, [fullSource, trackUserSource]);
 
   useEffect(() => () => {
@@ -3083,7 +3115,7 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
       }
       latestSaveStatus.current = "saving";
       onSaveStatus("saving");
-      const pendingSource = latestSource.current || fullSource();
+      const pendingSource = latestSource.current;
       const pendingTitle = latestTitle.current;
       try {
         await bridge.saveDocument({ id: document?.id, path: document?.path?.replace(" / ", "/"), title: pendingTitle, content: pendingSource });
@@ -3116,7 +3148,7 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
         window.setTimeout(() => void saveRef.current?.(), 0);
       }
     }
-  }, [document?.id, document?.path, documentPath, fullSource, onSaveStatus]);
+  }, [document?.id, document?.path, documentPath, onSaveStatus]);
 
   useEffect(() => {
     saveRef.current = save;
@@ -3695,17 +3727,17 @@ function Editor({ document, source, saveStatus, saveRequest, onSaveStatus, onBac
               contentEditableClassName="fylune-mdx-content"
               markdown={bodySource}
               placeholder={t("editor.startWriting")}
-              onChange={(nextSource) => {
+              onChange={(nextSource, initialMarkdownNormalize) => {
+                const previousBody = bodySourceRef.current;
                 bodySourceRef.current = nextSource;
+                // Import normalization is not an edit. Keep the original file bytes
+                // as the save baseline until a real document change arrives.
+                if (initialMarkdownNormalize || nextSource === previousBody) return;
                 const nextDocumentSource = fullSource(nextSource);
-                if (nextDocumentSource === latestSource.current) {
-                  editorReady.current = true;
-                  return;
-                }
+                if (nextDocumentSource === latestSource.current) return;
                 scheduleWordCount(nextSource);
                 trackUserSource(nextDocumentSource);
-                if (editorReady.current) queueSave();
-                else editorReady.current = true;
+                queueSave();
               }}
               readOnly={presentation || saveStatus === "readonly"}
               plugins={editorPlugins}
@@ -3831,6 +3863,20 @@ function SettingsPanel({
 }) {
   const { t } = useTranslation();
   const [accountLoading, setAccountLoading] = useState(false);
+  const [cliStatus, setCliStatus] = useState(null);
+  const [cliBusy, setCliBusy] = useState(false);
+  const [cliError, setCliError] = useState("");
+  const [cliPathCopied, setCliPathCopied] = useState(false);
+  const [cliInstallCopied, setCliInstallCopied] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    bridge.getCliStatus?.()
+      .then((status) => { if (active) setCliStatus(status); })
+      .catch((error) => { if (active) setCliError(error?.message || t("settings.cli.failed")); });
+    return () => { active = false; };
+  }, [t]);
+
   const account = accountDetails?.user || null;
   const isSignedIn = Boolean(account?.email);
 
@@ -3845,6 +3891,21 @@ function SettingsPanel({
       onAccountChange({ user: session?.user });
     } finally {
       setAccountLoading(false);
+    }
+  }
+
+  async function updateCli() {
+    if (!cliStatus || cliStatus.status === "unavailable" || cliStatus.status === "conflict") return;
+    setCliBusy(true);
+    setCliError("");
+    try {
+      setCliStatus(cliStatus.status === "installed"
+        ? await bridge.uninstallCli()
+        : await bridge.installCli());
+    } catch (error) {
+      setCliError(error?.message || t("settings.cli.failed"));
+    } finally {
+      setCliBusy(false);
     }
   }
 
@@ -3890,6 +3951,57 @@ function SettingsPanel({
               ><span /></button>
             </div>
             <div className="privacy-note"><CheckCircle /> {preferences.reviewAgentChanges ? t("settings.agentChangesReview") : t("settings.agentChangesAuto")}</div>
+          </section>
+
+          <section className="settings-section cli-settings-section">
+            <div className="setting-row">
+              <div>
+                <h2>{t("settings.cli.title")}</h2>
+                <p>{t(cliStatus?.manualInstallCommand ? "settings.cli.unavailableAppStore" : "settings.cli.description")}</p>
+              </div>
+              {cliStatus?.manualInstallCommand ? (
+                <button className="secondary-button" onClick={async () => {
+                  try {
+                    await bridge.copyText(cliStatus.manualInstallCommand);
+                    setCliInstallCopied(true);
+                    setCliError("");
+                  } catch (error) {
+                    setCliError(error?.message || t("settings.cli.failed"));
+                  }
+                }}><Copy /> {t(cliInstallCopied ? "settings.cli.copied" : "settings.cli.copyInstall")}</button>
+              ) : null}
+              {cliStatus && !new Set(["unavailable", "conflict"]).has(cliStatus.status) ? (
+                <button className="secondary-button" disabled={cliBusy} onClick={updateCli}>
+                  <TerminalWindow />
+                  {t(`settings.cli.${cliBusy ? "loading" : cliStatus.status === "installed" ? "uninstall" : cliStatus.status === "repair" ? "repair" : "install"}`)}
+                </button>
+              ) : null}
+            </div>
+            {cliStatus?.status === "installed" ? <p className="cli-status-message">{t("settings.cli.installed", { path: cliStatus.installPath })}</p> : null}
+            {cliStatus?.status === "conflict" ? <p className="settings-error" role="alert">{t("settings.cli.conflict", { path: cliStatus.installPath })}</p> : null}
+            {cliStatus?.status === "unavailable" && !cliStatus.manualInstallCommand ? <p className="cli-status-message">{t(cliStatus.reason === "app-store" ? "settings.cli.unavailableAppStore" : "settings.cli.unavailable")}</p> : null}
+            {cliStatus?.manualInstallCommand ? <div className="cli-manual-install">
+              <p>{t("settings.cli.terminalSteps")}</p>
+              <details><summary>{t("settings.cli.showCommand")}</summary><pre>{cliStatus.manualInstallCommand}</pre></details>
+            </div> : null}
+            {(cliStatus?.status === "installed" || cliStatus?.manualInstallCommand) ? <p className="cli-status-message">{t("settings.cli.tryCommand")} <code>~/.local/bin/fylune --help</code> · <code>fylune .</code></p> : null}
+            {(cliStatus?.manualInstallCommand || (cliStatus?.status === "installed" && !cliStatus.pathConfigured)) ? (
+              <>
+              <p className="cli-status-message">{t("settings.cli.pathHelp")}</p>
+              <div className="cli-path-hint">
+                <code>export PATH=&quot;$HOME/.local/bin:$PATH&quot;</code>
+                <button className="text-button" onClick={async () => {
+                  try {
+                    await bridge.copyText('export PATH="$HOME/.local/bin:$PATH"');
+                    setCliPathCopied(true);
+                  } catch (error) {
+                    setCliError(error?.message || t("settings.cli.failed"));
+                  }
+                }}><Copy /> {t(cliPathCopied ? "settings.cli.copied" : "settings.cli.copyPath")}</button>
+              </div>
+              </>
+            ) : null}
+            {cliError ? <p className="settings-error" role="alert">{cliError}</p> : null}
           </section>
 
           <section className="settings-section account-section">
@@ -4251,6 +4363,7 @@ export function App() {
     setSaveStatuses({});
     setLibrarySection("all");
     setSidebarView("files");
+    setSidebarCollapsed(Boolean(nextProject.targetPath));
     setLibraryState(nextProject.tree?.length ? "ready" : "empty");
     setStartupMode("workspace");
     if (!target) {
@@ -4260,7 +4373,8 @@ export function App() {
       return;
     }
     try {
-      const result = await bridge.readDocument(target.path.replaceAll(" / ", "/"));
+      const result = nextProject.targetDocument
+        || await bridge.readDocument(target.path.replaceAll(" / ", "/"));
       if (generation !== projectGenerationRef.current) return;
       setDocumentSources({ [target.id]: result?.content || "" });
       documentContextSourcesRef.current = { [target.id]: result?.content || "" };

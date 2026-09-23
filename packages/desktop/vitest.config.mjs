@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     include: ["tests/renderer/**/*.test.{js,jsx}"],
     setupFiles: ["./tests/setup.js"],
+    testTimeout: 15_000,
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary"],

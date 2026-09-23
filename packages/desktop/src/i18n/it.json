@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "Gli aggiornamenti automatici non sono disponibili in questa build.",
         "UPDATE_FAILED": "Fylune non ha completato l’aggiornamento. I file locali non sono stati modificati."
       }
+    },
+    "cli": {
+      "title": "Riga di comando",
+      "description": "Apri Fylune, aree di lavoro e documenti da qualsiasi terminale. Gli agenti usano lo stesso comando per collaborare in sicurezza.",
+      "loading": "Aggiornamento…",
+      "install": "Installa CLI",
+      "repair": "Ripara CLI",
+      "uninstall": "Disinstalla CLI",
+      "installed": "Il comando fylune è installato in {path}.",
+      "copyPath": "Copia comando PATH",
+      "copied": "Copiato",
+      "unavailableAppStore": "La versione App Store usa un launcher installato dal Terminale per aprire file e cartelle. I comandi agent e doctor richiedono la versione scaricata direttamente.",
+      "unavailable": "Lo strumento da riga di comando non è disponibile in questa build.",
+      "conflict": "Esiste già un altro file in {path}. Fylune non lo sovrascriverà.",
+      "failed": "Fylune non ha potuto aggiornare lo strumento da riga di comando.",
+      "copyInstall": "Copia comando di installazione",
+      "terminalSteps": "Incolla il comando nel Terminale e premi Invio. Installa solo il launcher in ~/.local/bin, senza password amministratore, download o modifiche al profilo shell.",
+      "showCommand": "Mostra comando",
+      "tryCommand": "Prova nel Terminale:",
+      "pathHelp": "Se fylune non viene trovato, esegui questo comando. Aggiungi la stessa riga a ~/.zshrc (zsh) o ~/.bash_profile (bash) per i terminali futuri."
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "reload": "Ricarica dal disco",
     "fidelityNote": "La modifica riscrive la cartella di lavoro. Valori, formati e formule delle celle vengono mantenuti; grafici e tabelle pivot potrebbero non sopravvivere alla riscrittura."
   },
+  "json": {
+    "editing": "Modifica di {title}",
+    "format": "Formatta",
+    "jsonEditor": "Editor JSON",
+    "jsonlEditor": "Editor JSONL",
+    "validJson": "JSON valido",
+    "validJsonl": "JSONL valido"
+  },
   "slides": {
     "opening": "Apertura della presentazione…",
     "slides": "Diapositive",
@@ -520,14 +548,6 @@
     "video": "Video",
     "audio": "Audio",
     "unsupportedElement": "Oggetto della diapositiva"
-  },
-  "json": {
-    "editing": "Modifica di {title}",
-    "format": "Formatta",
-    "jsonEditor": "Editor JSON",
-    "jsonlEditor": "Editor JSONL",
-    "validJson": "JSON valido",
-    "validJsonl": "JSONL valido"
   },
   "legacyOffice": {
     "title": "I file {format} si aprono nell’app originale",

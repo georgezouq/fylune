@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "이 빌드에서는 자동 업데이트를 사용할 수 없습니다.",
         "UPDATE_FAILED": "Fylune이 업데이트를 완료하지 못했습니다. 로컬 파일은 변경되지 않았습니다."
       }
+    },
+    "cli": {
+      "title": "명령줄",
+      "description": "어느 터미널에서나 Fylune, 작업 공간, 문서를 열 수 있습니다. Agent도 같은 명령으로 안전하게 협업합니다.",
+      "loading": "업데이트 중…",
+      "install": "CLI 설치",
+      "repair": "CLI 복구",
+      "uninstall": "CLI 제거",
+      "installed": "fylune 명령이 {path}에 설치되어 있습니다.",
+      "copyPath": "PATH 명령 복사",
+      "copied": "복사됨",
+      "unavailableAppStore": "App Store 버전은 터미널에서 설치한 실행기로 파일과 폴더를 엽니다. agent 및 doctor 명령은 직접 다운로드 버전이 필요합니다.",
+      "unavailable": "이 빌드에서는 명령줄 도구를 사용할 수 없습니다.",
+      "conflict": "{path}에 다른 파일이 이미 있습니다. Fylune은 덮어쓰지 않습니다.",
+      "failed": "Fylune에서 명령줄 도구를 업데이트하지 못했습니다.",
+      "copyInstall": "설치 명령 복사",
+      "terminalSteps": "터미널에 붙여 넣고 Return을 누르세요. ~/.local/bin에 실행기만 설치하며 관리자 암호, 다운로드, 셸 프로필 변경이 필요하지 않습니다.",
+      "showCommand": "설치 명령 보기",
+      "tryCommand": "터미널에서 실행:",
+      "pathHelp": "fylune을 찾을 수 없다면 아래 명령을 실행하세요. 이후 터미널에서도 사용하려면 같은 줄을 ~/.zshrc(zsh) 또는 ~/.bash_profile(bash)에 추가하세요."
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "fidelityNote": "편집하면 통합 문서를 다시 씁니다. 셀 값, 서식, 수식은 유지되지만 차트와 피벗 테이블은 유지되지 않을 수 있습니다.",
     "sheetCount_one": "시트 {count}개"
   },
+  "json": {
+    "editing": "{title} 편집 중",
+    "format": "서식 정리",
+    "jsonEditor": "JSON 편집기",
+    "jsonlEditor": "JSONL 편집기",
+    "validJson": "유효한 JSON",
+    "validJsonl": "유효한 JSONL"
+  },
   "slides": {
     "opening": "프레젠테이션을 여는 중…",
     "slides": "슬라이드",
@@ -520,14 +548,6 @@
     "audio": "오디오",
     "unsupportedElement": "슬라이드 개체",
     "slideCount_one": "슬라이드 {count}장"
-  },
-  "json": {
-    "editing": "{title} 편집 중",
-    "format": "서식 정리",
-    "jsonEditor": "JSON 편집기",
-    "jsonlEditor": "JSONL 편집기",
-    "validJson": "유효한 JSON",
-    "validJsonl": "유효한 JSONL"
   },
   "legacyOffice": {
     "title": "{format} 파일은 원래 앱에서 열립니다",

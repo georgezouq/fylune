@@ -96,14 +96,15 @@ svg {
 
 .fylune-app.is-first-run {
   display: block;
+  padding: 0;
 }
 
 .startup-splash,
 .first-run {
   width: 100%;
   height: 100%;
-  border: 1px solid var(--glass-border);
-  border-radius: 18px;
+  border: 0;
+  border-radius: 0;
   background: var(--document-panel);
 }
 
@@ -2768,7 +2769,9 @@ svg {
 .fylune-mdx-content li[role="checkbox"]::after {
   top: calc(0.25em + var(--spacing-0_5));
 }
-.fylune-mdx-content blockquote { margin: 28px 0; padding-block: 1px; padding-inline: 18px 0; border-inline-start: 1px solid var(--primary); color: var(--muted); }
+.fylune-mdx-content blockquote { margin: 28px 0; padding-block: 8px; padding-inline: 18px 0; border-inline-start: 1px solid var(--primary); color: var(--muted); overflow-wrap: anywhere; }
+.fylune-mdx-content blockquote > :first-child { margin-top: 0; }
+.fylune-mdx-content blockquote > :last-child { margin-bottom: 0; }
 .fylune-mdx-content pre { overflow: auto; padding: 14px; border-radius: 9px; background: var(--surface); font: 13px/1.55 "SFMono-Regular", ui-monospace, monospace; }
 
 /* Code fences use an embedded CodeMirror instance. Keep its editor chrome on
@@ -2792,6 +2795,10 @@ svg {
   background: var(--surface-elevated);
   color: var(--muted);
   box-shadow: 0 4px 14px color-mix(in oklch, var(--shadow), transparent 42%);
+}
+
+.fylune-mdx-editor [class*="_codeMirrorToolbar_"]:has(:disabled) {
+  display: none;
 }
 
 .fylune-mdx-editor [class*="_codeMirrorToolbar_"] [class*="_selectTrigger_"],
@@ -3983,6 +3990,17 @@ svg {
 .switch.on span { transform: translateX(16px); }
 .privacy-note { display: flex; align-items: center; gap: 7px; margin-top: 14px; padding: 10px; border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 11px; }
 .privacy-note svg { width: 15px; height: 15px; color: var(--success); }
+.cli-settings-section .secondary-button { flex: 0 0 auto; white-space: nowrap; }
+.cli-status-message { margin: 12px 0 0 !important; overflow-wrap: anywhere; }
+.cli-path-hint { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.cli-path-hint code { min-width: 0; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.cli-path-hint .text-button { flex: 0 0 auto; gap: 5px; }
+.cli-path-hint svg { width: 14px; height: 14px; }
+.cli-manual-install { margin-top: 12px; }
+.cli-manual-install summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+.cli-manual-install pre { max-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; padding: 12px; background: var(--surface); border-radius: 8px; }
+.cli-settings-section .setting-row { flex-wrap: wrap; }
+
 .settings-account-profile {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) auto;

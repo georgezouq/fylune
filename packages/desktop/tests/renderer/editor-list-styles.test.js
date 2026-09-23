@@ -46,6 +46,20 @@ describe("editor list styles", () => {
   });
 });
 
+describe("editor quote styles", () => {
+  it("wraps quote text and balances its content around the rule", () => {
+    expect(editorStyles).toMatch(
+      /\.fylune-mdx-content blockquote \{[^}]*padding-block: 8px;[^}]*overflow-wrap: anywhere;/,
+    );
+    expect(editorStyles).toContain(
+      ".fylune-mdx-content blockquote > :first-child { margin-top: 0; }",
+    );
+    expect(editorStyles).toContain(
+      ".fylune-mdx-content blockquote > :last-child { margin-bottom: 0; }",
+    );
+  });
+});
+
 describe("editor tooltip theme styles", () => {
   it("keeps MDXEditor tooltips readable on the dark formatting surface", () => {
     expect(editorStyles).toContain('.fylune-mdx-editor [role="tooltip"]');

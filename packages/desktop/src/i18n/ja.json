@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "このビルドでは自動アップデートを利用できません。",
         "UPDATE_FAILED": "アップデートを完了できませんでした。ローカルファイルは変更されていません。"
       }
+    },
+    "cli": {
+      "title": "コマンドライン",
+      "description": "任意のターミナルから Fylune、ワークスペース、文書を開けます。Agent も同じコマンドで安全に連携します。",
+      "loading": "更新中…",
+      "install": "CLI をインストール",
+      "repair": "CLI を修復",
+      "uninstall": "CLI をアンインストール",
+      "installed": "fylune コマンドは {path} にインストールされています。",
+      "copyPath": "PATH コマンドをコピー",
+      "copied": "コピー済み",
+      "unavailableAppStore": "App Store 版はターミナルから起動用コマンドをインストールしてファイルやフォルダを開きます。agent と doctor コマンドには直接ダウンロード版が必要です。",
+      "unavailable": "このビルドではコマンドラインツールを利用できません。",
+      "conflict": "{path} には別のファイルがあります。Fylune は上書きしません。",
+      "failed": "Fylune はコマンドラインツールを更新できませんでした。",
+      "copyInstall": "インストールコマンドをコピー",
+      "terminalSteps": "ターミナルに貼り付けて Return を押します。起動用コマンドのみを ~/.local/bin にインストールします。管理者パスワード、ダウンロード、シェル設定の変更は不要です。",
+      "showCommand": "コマンドを表示",
+      "tryCommand": "ターミナルで試す：",
+      "pathHelp": "fylune が見つからない場合は、次のコマンドを実行してください。今後のターミナルでも使うには、同じ行を ~/.zshrc（zsh）または ~/.bash_profile（bash）に追加します。"
     }
   },
   "asset": {
@@ -500,6 +520,14 @@
     "fidelityNote": "編集するとブック全体が書き直されます。セルの値、書式、数式は保持されますが、グラフやピボットテーブルは失われる場合があります。",
     "sheetCount_one": "{count} 個のシート"
   },
+  "json": {
+    "editing": "{title} を編集中",
+    "format": "整形",
+    "jsonEditor": "JSON エディター",
+    "jsonlEditor": "JSONL エディター",
+    "validJson": "有効な JSON",
+    "validJsonl": "有効な JSONL"
+  },
   "slides": {
     "opening": "プレゼンテーションを開いています…",
     "slides": "スライド",
@@ -520,14 +548,6 @@
     "audio": "オーディオ",
     "unsupportedElement": "スライドオブジェクト",
     "slideCount_one": "{count} 枚のスライド"
-  },
-  "json": {
-    "editing": "{title} を編集中",
-    "format": "整形",
-    "jsonEditor": "JSON エディター",
-    "jsonlEditor": "JSONL エディター",
-    "validJson": "有効な JSON",
-    "validJsonl": "有効な JSONL"
   },
   "legacyOffice": {
     "title": "{format} ファイルは元のアプリで開きます",

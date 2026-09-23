@@ -1,6 +1,37 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("Fylune bridge adapter", () => {
+  it.each(["Notes.md", "settings.json", "events.jsonl"])("retains the read hash when directly opening %s", async (filePath) => {
+    let openFile;
+    const originalHash = "a".repeat(64);
+    const savedHash = "b".repeat(64);
+    const save = vi.fn().mockResolvedValue({ path: filePath, hash: savedHash });
+    const saveDraft = vi.fn().mockResolvedValue({});
+    window.fylune = {
+      projects: { onOpenFile: (callback) => { openFile = callback; return () => {}; } },
+      documents: { save, saveDraft },
+    };
+    const { getFyluneBridge } = await import("../../src/fyluneBridge.js");
+    const bridge = getFyluneBridge();
+    bridge.onExternalFileOpen(vi.fn());
+    await openFile({
+      projectId: "project-external",
+      targetPath: filePath,
+      targetDocument: { path: filePath, content: "original", hash: originalHash },
+      tree: { kind: "directory", children: [] },
+    });
+
+    await bridge.saveDraft({ content: "draft" });
+    expect(saveDraft).toHaveBeenLastCalledWith(expect.objectContaining({ path: filePath, baseHash: originalHash }));
+    save.mockRejectedValueOnce(Object.assign(new Error("Changed on disk"), { code: "CONTENT_CONFLICT" }));
+    await expect(bridge.saveDocument({ content: "edit" })).rejects.toMatchObject({ code: "CONTENT_CONFLICT" });
+    await bridge.saveDocument({ content: "edit" });
+    expect(save).toHaveBeenLastCalledWith({ projectId: "project-external", path: filePath, content: "edit", expectedHash: originalHash });
+    await bridge.saveDocument({ content: "next edit" });
+    expect(save).toHaveBeenLastCalledWith(expect.objectContaining({ expectedHash: savedHash }));
+  });
+
+
   beforeEach(() => {
     vi.resetModules();
     delete window.fylune;
@@ -84,6 +115,7 @@ describe("Fylune bridge adapter", () => {
       name: "Data",
       path: "/Users/test/Data",
       targetPath: "settings.json",
+      targetDocument: { path: "settings.json", content: '{"theme":"dark"}', readOnly: true },
       tree: {
         kind: "directory",
         children: [{ kind: "file", name: "settings.json", path: "settings.json", extension: "json", fileType: "document" }],
@@ -93,6 +125,7 @@ describe("Fylune bridge adapter", () => {
     expect(callback).toHaveBeenCalledWith(expect.objectContaining({
       id: "project-json",
       targetPath: "settings.json",
+      targetDocument: expect.objectContaining({ content: '{"theme":"dark"}', readOnly: true }),
       tree: [expect.objectContaining({ path: "settings.json", type: "document" })],
     }));
   });

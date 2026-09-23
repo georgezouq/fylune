@@ -1,5 +1,5 @@
 import path from "node:path";
-import { access, copyFile, cp, mkdir, open, readdir, readFile, rename, stat, unlink } from "node:fs/promises";
+import { access, copyFile, cp, lstat, mkdir, open, readdir, readFile, realpath, rename, stat, unlink } from "node:fs/promises";
 import { constants } from "node:fs";
 import writeFileAtomic from "write-file-atomic";
 
@@ -224,6 +224,36 @@ export async function readDocument(root, relativePath) {
     content,
     hash: sha256(content),
     mtimeMs: info.mtimeMs,
+    readOnly,
+  };
+}
+
+export async function readExternalDocument(filePath) {
+  if (!isDocumentPath(filePath)) {
+    throw new FyluneError("UNSUPPORTED_FILE", "Fylune can edit Markdown, MDX, JSON, and JSONL documents only.");
+  }
+  const sourceInfo = await lstat(filePath);
+  if (!sourceInfo.isFile() || sourceInfo.isSymbolicLink()) {
+    throw new FyluneError("UNSUPPORTED_FILE", "The selected path is not a document.");
+  }
+  const absolutePath = await realpath(filePath);
+  const info = await stat(absolutePath);
+  if (info.size > MAX_DOCUMENT_BYTES) {
+    throw new FyluneError("FILE_TOO_LARGE", "This document is larger than the 20 MB safety limit.");
+  }
+  const content = await readFile(absolutePath, "utf8");
+  let readOnly = false;
+  try {
+    await access(absolutePath, constants.W_OK);
+  } catch {
+    readOnly = true;
+  }
+  return {
+    path: path.basename(absolutePath),
+    content,
+    hash: sha256(content),
+    mtimeMs: info.mtimeMs,
+    size: info.size,
     readOnly,
   };
 }

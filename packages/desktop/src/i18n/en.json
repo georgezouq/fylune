@@ -372,6 +372,26 @@
         "UPDATER_UNAVAILABLE": "Automatic updates are unavailable in this build.",
         "UPDATE_FAILED": "Fylune could not complete the update. Your local files were not changed."
       }
+    },
+    "cli": {
+      "title": "Command line",
+      "description": "Open Fylune, workspaces, and documents from any terminal. Agents use the same command for safe local collaboration.",
+      "loading": "Updating…",
+      "install": "Install CLI",
+      "repair": "Repair CLI",
+      "uninstall": "Uninstall CLI",
+      "installed": "The fylune command is installed at {path}.",
+      "copyPath": "Copy PATH command",
+      "copied": "Copied",
+      "unavailableAppStore": "The App Store version uses a terminal-installed launcher to open files and folders. Agent and doctor commands require the direct release.",
+      "unavailable": "The command line tool is not available in this build.",
+      "conflict": "Another file already exists at {path}. Fylune will not overwrite it.",
+      "failed": "Fylune could not update the command line tool.",
+      "copyInstall": "Copy install command",
+      "terminalSteps": "Paste the command into Terminal and press Return. It installs only the launcher in ~/.local/bin; no administrator password, downloads, or shell-profile changes.",
+      "showCommand": "Show install command",
+      "tryCommand": "Try in Terminal:",
+      "pathHelp": "If fylune is not found, run this in Terminal. Add the same line to ~/.zshrc (zsh) or ~/.bash_profile (bash) for future terminals."
     }
   },
   "asset": {
